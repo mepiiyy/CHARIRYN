@@ -62,8 +62,7 @@ $beranda_sidebar = urlBerandaSesuaiPeran();
             <?= itemMenu('dashboard', 'Dashboard', BASE_URL . 'portal/index.php', 'portal') ?>
             <?= itemMenu('pembayaran', 'Ajukan Pembayaran', BASE_URL . 'portal/pengajuan.php', 'portal-pengajuan') ?>
             <?= itemMenu('pengajuan', 'Status Pengajuan', BASE_URL . 'portal/status-pengajuan.php', 'portal-status') ?>
-            <?= itemMenu('permintaan', 'Ubah Profil', BASE_URL . 'portal/profil.php', 'portal-profil') ?>
-            <?= itemMenu('pengguna', 'Akun Saya', BASE_URL . 'portal/akun.php', 'portal-akun') ?>
+            <?= itemMenu('pengguna', 'Kelola Akun', BASE_URL . 'portal/akun.php', 'portal-akun') ?>
         <?php elseif ($peran_sidebar === 'pemilik'): ?>
             <p class="grup-menu">Laporan</p>
             <?= itemMenu('laporan', 'Laporan Piutang', BASE_URL . 'laporan/piutang.php', 'laporan-piutang') ?>

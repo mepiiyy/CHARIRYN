@@ -19,24 +19,44 @@ define('STORAGE_BUKTI_PATH', STORAGE_PATH . '/bukti');
 
 date_default_timezone_set('Asia/Jakarta');
 
-// Deteksi otomatis base URL (contoh: http://localhost/piutang-pelanggan/)
+// Deteksi otomatis base URL, portabel untuk Linux dan Windows/XAMPP.
+// Windows memakai backslash dan huruf drive yang bisa berbeda besar-kecil,
+// jadi perbandingan path dilakukan case-insensitive.
+$nama_folder = basename(BASE_PATH);
+
 if (PHP_SAPI === 'cli' || empty($_SERVER['DOCUMENT_ROOT'])) {
-    define('BASE_URL', 'http://localhost/piutang-pelanggan/');
+    define('BASE_URL', 'http://localhost/' . $nama_folder . '/');
 } else {
     $skema = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $dokumen = rtrim(str_replace('\\', '/', (string) $_SERVER['DOCUMENT_ROOT']), '/');
-    $jalur = str_replace('\\', '/', BASE_PATH);
-    $relatif = $jalur;
-    if (str_starts_with($jalur, $dokumen)) {
+    $jalur = rtrim(str_replace('\\', '/', BASE_PATH), '/');
+    $relatif = null;
+
+    if ($dokumen !== '' && strncasecmp($jalur, $dokumen, strlen($dokumen)) === 0
+        && ($jalur === $dokumen || ($jalur[strlen($dokumen)] ?? '') === '/')) {
         $relatif = substr($jalur, strlen($dokumen));
-    } else {
-        // Fallback: folder aplikasi di luar DOCUMENT_ROOT (misal symlink)
+    }
+
+    // Fallback: proyek diakses lewat symlink/junction, alias folder, atau vhost,
+    // sehingga path asli tidak berada di bawah DOCUMENT_ROOT. Hitung selisih
+    // antara SCRIPT_NAME (URL) dan SCRIPT_FILENAME (path asli).
+    if ($relatif === null) {
         $skrip = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
-        $penanda = '/' . basename(BASE_PATH);
-        $pos = strpos($skrip, $penanda . '/');
-        if ($pos !== false) {
-            $relatif = substr($skrip, 0, $pos) . $penanda;
+        $asli = (string) ($_SERVER['SCRIPT_FILENAME'] ?? '');
+        $berkas = str_replace('\\', '/', realpath($asli) !== false ? realpath($asli) : $asli);
+        $sisa = '';
+        if ($berkas !== '' && strncasecmp($berkas, $jalur . '/', strlen($jalur) + 1) === 0) {
+            $sisa = substr($berkas, strlen($jalur));
+        }
+        if ($sisa !== '' && strlen($skrip) > strlen($sisa)
+            && strcasecmp(substr($skrip, -strlen($sisa)), $sisa) === 0) {
+            $relatif = substr($skrip, 0, strlen($skrip) - strlen($sisa));
+        } else {
+            $penanda = '/' . $nama_folder;
+            $pos = stripos($skrip, $penanda . '/');
+            $relatif = $pos !== false ? substr($skrip, 0, $pos + strlen($penanda)) : $penanda;
         }
     }
-    define('BASE_URL', $skema . '://' . $_SERVER['HTTP_HOST'] . $relatif . '/');
+
+    define('BASE_URL', $skema . '://' . $_SERVER['HTTP_HOST'] . rtrim($relatif, '/') . '/');
 }

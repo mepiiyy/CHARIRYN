@@ -7,7 +7,7 @@
 --   pelanggan / Pelanggan123!  (terhubung ke PLG-001)
 -- =============================================================
 
-USE piutang_pelanggan;
+USE chariryn;
 
 SET NAMES utf8mb4;
 

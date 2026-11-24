@@ -1,15 +1,15 @@
 -- =============================================================
 -- Sistem Informasi Pengelolaan Data Piutang Pelanggan
--- Database : piutang_pelanggan
+-- Database : chariryn
 -- Engine   : InnoDB
 -- Charset  : utf8mb4
 -- =============================================================
 
-CREATE DATABASE IF NOT EXISTS piutang_pelanggan
+CREATE DATABASE IF NOT EXISTS chariryn
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
-USE piutang_pelanggan;
+USE chariryn;
 
 -- -------------------------------------------------------------
 -- Tabel: pelanggan
