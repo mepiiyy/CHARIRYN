@@ -3,18 +3,32 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman tambah pada modul Pembayaran.
+ * Gunanya : Menerima, memvalidasi, lalu menyimpan data baru.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PembayaranService.php, helpers/*, tabel pembayaran, piutang, pelanggan.
+ */
+
+/**
  * Halaman: Tambah Pembayaran
  * Fungsi: Mencatat pembayaran piutang dengan validasi terhadap sisa piutang
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
 
 $judul_halaman = 'Tambah Pembayaran';
 $sub_judul_halaman = 'Catat pembayaran piutang pelanggan';
 $halaman_aktif = 'pembayaran';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $daftarPiutang = PiutangService::ambilOpsiUntukBayar($pdo);
@@ -38,6 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $lunasiMode && $piutangTerpilih !==
     $sisaLunasi = round((float) $piutangTerpilih['sisa_piutang'], 2);
     $jumlah = $sisaLunasi == (int) $sisaLunasi ? (string) (int) $sisaLunasi : number_format($sisaLunasi, 2, ',', '.');
 }
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPiutang = (int) ($_POST['id_piutang'] ?? 0);

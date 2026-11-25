@@ -3,17 +3,31 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman status pada modul Akun pelanggan.
+ * Gunanya : Menampilkan atau memperbarui status sesuai hak akses.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PenggunaService.php, helpers/*, tabel users, pelanggan.
+ */
+
+/**
  * Halaman: Ubah Status Akun Pelanggan (DFD 7.3)
  * Fungsi: Mengaktifkan atau menonaktifkan akun login pelanggan.
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
+
+// Baca ID dari URL melalui helper yang menolak nilai bukan angka.
 
 $id = ambilIdDariGet();
 if ($id === null) {
     redirect(BASE_URL . 'error/404.php');
 }
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $akun = PenggunaService::ambilAkunPelangganById($pdo, $id);
@@ -26,10 +40,14 @@ $judul_halaman = 'Ubah Status Akun';
 $sub_judul_halaman = (string) $akun['username'];
 $halaman_aktif = 'akun-pelanggan';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
 
 $statusBaru = $akun['status'] === 'aktif' ? 'nonaktif' : 'aktif';
 $namaTindakan = $statusBaru === 'aktif' ? 'Aktifkan Akun' : 'Nonaktifkan Akun';
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!cekTokenCsrf($_POST['token_csrf'] ?? null)) {

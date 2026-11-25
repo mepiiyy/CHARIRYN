@@ -1,7 +1,11 @@
+-- Apa ini : Trigger database untuk menjaga ringkasan piutang tetap sinkron.
+-- Gunanya : Menghitung ulang saldo dan status saat piutang/pembayaran berubah.
+-- Alur    : Perubahan pembayaran/piutang -> trigger menghitung ulang nilai ringkasan pada tabel piutang.
+-- Terhubung ke: helpers/piutang.php, tabel piutang/pembayaran, PembayaranService.php.
 -- =============================================================
 -- Trigger: ringkasan piutang selalu sinkron
 -- Alasan: web dan phpMyAdmin membaca database yang SAMA
--- (piutang_pelanggan). Web menghitung ulang ringkasan setiap ada
+-- (chariryn). Web menghitung ulang ringkasan setiap ada
 -- perubahan pembayaran, tetapi edit langsung dari phpMyAdmin
 -- melewati kode web. Trigger ini menghitung ulang kolom
 -- jumlah_dibayar, sisa_piutang, dan status dengan ATURAN YANG SAMA
@@ -13,11 +17,11 @@
 -- ditolak MySQL (error 1442) karena trigger menyentuh induknya.
 -- Cara pasang (sekali saja):
 --   mysql -u root -p < database/trigger-ringkasan.sql
--- atau lewat phpMyAdmin: pilih database piutang_pelanggan > tab SQL >
+-- atau lewat phpMyAdmin: pilih database chariryn > tab SQL >
 -- salin-tempel isi file ini > Jalankan.
 -- =============================================================
 
-USE piutang_pelanggan;
+USE chariryn;
 
 DROP TRIGGER IF EXISTS trg_piutang_bi;
 DROP TRIGGER IF EXISTS trg_piutang_bu;

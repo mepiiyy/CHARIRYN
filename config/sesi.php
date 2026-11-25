@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Pengaturan sesi pengguna.
+ * Gunanya : Memulai sesi dengan cookie yang membatasi akses JavaScript dan pengiriman lintas situs.
+ * Alur    : Aplikasi membaca nilai ini saat bootstrap, sebelum halaman menjalankan aturan bisnis.
+ * Terhubung ke: includes/init.php, helpers/autentikasi.php, tabel users.
+ */
+
+/**
  * File: Konfigurasi Sesi
  * Fungsi: Inisialisasi sesi dengan pengaturan keamanan
  */

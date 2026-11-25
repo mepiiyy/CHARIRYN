@@ -3,17 +3,31 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman edit pada modul Pembayaran.
+ * Gunanya : Memuat data lama dan menyimpan perubahan setelah validasi.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PembayaranService.php, helpers/*, tabel pembayaran, piutang, pelanggan.
+ */
+
+/**
  * Halaman: Edit Pembayaran
  * Fungsi: Memperbarui pembayaran dan menghitung ulang piutang terkait
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
+
+// Baca ID dari URL melalui helper yang menolak nilai bukan angka.
 
 $id = ambilIdDariGet();
 if ($id === null) {
     redirect(BASE_URL . 'error/404.php');
 }
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $pembayaran = PembayaranService::ambil($pdo, $id);
@@ -26,6 +40,8 @@ $judul_halaman = 'Edit Pembayaran';
 $sub_judul_halaman = $pembayaran['no_transaksi'];
 $halaman_aktif = 'pembayaran';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
 
 $kesalahan = [];
@@ -34,6 +50,8 @@ $tanggal = (string) $pembayaran['tanggal_pembayaran'];
 $jumlah = (string) $pembayaran['jumlah_bayar'];
 $metode = (string) $pembayaran['metode_pembayaran'];
 $keterangan = (string) ($pembayaran['keterangan'] ?? '');
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tanggal = parseTanggalID($_POST['tanggal_pembayaran'] ?? '') ?? '';

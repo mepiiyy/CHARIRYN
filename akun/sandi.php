@@ -3,10 +3,19 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman sandi pada modul Akun staf.
+ * Gunanya : Memverifikasi kata sandi lama sebelum menyimpan yang baru.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PenggunaService.php, helpers/*, tabel users.
+ */
+
+/**
  * Halaman: Akun Saya - Ganti Kata Sandi Mandiri (DFD 1.4)
  * Fungsi: Pemilik, Manajer, dan Pelanggan dapat mengganti kata sandi
  * sendiri. Validasi kata sandi lama dan hashing baru.
  */
+
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
 
 require_once __DIR__ . '/../includes/init.php';
 requireLogin();
@@ -15,12 +24,16 @@ $judul_halaman = 'Akun Saya';
 $sub_judul_halaman = 'Informasi akun dan keamanan';
 $halaman_aktif = 'akun';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
 
 $kesalahan = [];
 $lama = '';
 $baru = '';
 $konfirmasi = '';
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lama = (string) ($_POST['password_lama'] ?? '');

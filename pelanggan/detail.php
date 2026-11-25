@@ -3,17 +3,31 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman detail pada modul Pelanggan.
+ * Gunanya : Menampilkan satu data beserta informasi terkait.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PelangganService.php, helpers/*, tabel pelanggan, piutang, pembayaran.
+ */
+
+/**
  * Halaman: Detail Pelanggan
  * Fungsi: Menampilkan profil, ringkasan keuangan, dan riwayat transaksi pelanggan
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
+
+// Baca ID dari URL melalui helper yang menolak nilai bukan angka.
 
 $id = ambilIdDariGet();
 if ($id === null) {
     redirect(BASE_URL . 'error/404.php');
 }
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $pelanggan = PelangganService::ambil($pdo, $id);
@@ -25,6 +39,8 @@ if ($pelanggan === null) {
 $judul_halaman = 'Detail Pelanggan';
 $sub_judul_halaman = $pelanggan['nama_pelanggan'];
 $halaman_aktif = 'pelanggan';
+
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
 
 require_once BASE_PATH . '/includes/kepala.php';
 

@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Potongan kerangka halaman bersama.
+ * Gunanya : Menghindari pengulangan layout, navigasi, pesan, dan bootstrap.
+ * Alur    : Halaman memuat bootstrap dan potongan layout -> browser menerima kerangka serta aset bersama.
+ * Terhubung ke: halaman staf, helpers/*, assets/css/*, assets/js/*.
+ */
+
+/**
  * Bagian kepala layout: membuka dokumen HTML dan memuat sidebar + header
  */
 $judul_penuh = ($judul_halaman !== '' ? $judul_halaman . ' - ' : '') . APP_NAME;

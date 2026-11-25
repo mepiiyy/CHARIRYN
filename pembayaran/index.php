@@ -3,18 +3,32 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman index pada modul Pembayaran.
+ * Gunanya : Menampilkan daftar atau ringkasan data.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PembayaranService.php, helpers/*, tabel pembayaran, piutang, pelanggan.
+ */
+
+/**
  * Halaman: Data Pembayaran
  * Fungsi: Menampilkan daftar pembayaran dengan pencarian, filter, dan paginasi
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
 
 $judul_halaman = 'Data Pembayaran';
 $sub_judul_halaman = 'Riwayat pembayaran piutang pelanggan';
 $halaman_aktif = 'pembayaran';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 

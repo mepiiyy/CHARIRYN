@@ -3,19 +3,33 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman detail pada modul Pengajuan pembayaran.
+ * Gunanya : Menampilkan satu data beserta informasi terkait.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PengajuanService.php, helpers/*, tabel pengajuan, pelanggan, piutang, pembayaran, users.
+ */
+
+/**
  * Halaman: Detail & Verifikasi Pengajuan Pembayaran (DFD 4.4)
  * Fungsi: Manajer memeriksa bukti, lalu menyetujui (membuat pembayaran
  * resmi) atau menolak pengajuan. Saldo piutang tidak berubah sebelum
  * pengajuan disetujui.
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
+
+// Baca ID dari URL melalui helper yang menolak nilai bukan angka.
 
 $id = ambilIdDariGet();
 if ($id === null) {
     redirect(BASE_URL . 'pengajuan/index.php');
 }
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $pengajuan = PengajuanService::ambil($pdo, $id);
@@ -28,10 +42,14 @@ $judul_halaman = 'Verifikasi Pengajuan';
 $sub_judul_halaman = (string) $pengajuan['no_transaksi'];
 $halaman_aktif = 'pengajuan';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
 
 $kesalahan = [];
 $alasan = '';
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!cekTokenCsrf($_POST['token_csrf'] ?? null)) {

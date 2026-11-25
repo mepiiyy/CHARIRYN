@@ -3,14 +3,31 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman beranda yang juga menjadi halaman pilih peran.
+ * Gunanya : Menampilkan dua jalur masuk, yaitu Pelanggan serta Manajer/Pemilik.
+ * Alur    : Muat bootstrap -> bila sesi sudah aktif langsung dialihkan ke
+ *           beranda sesuai peran -> bila belum, tampilkan dua kartu login.
+ * Terhubung ke:
+ *   - includes/init.php : bootstrap sesi, helper, dan service.
+ *   - helpers/autentikasi.php : sudahLogin(), redirect(), dan
+ *     urlBerandaSesuaiPeran().
+ *   - helpers/format.php : e() untuk escape keluaran.
+ *   - auth/login-pelanggan.php dan auth/login.php : tujuan kedua kartu.
+ *   - Tabel: users dan pelanggan, dibaca saat sesi diverifikasi.
+ *
+ * Halaman ini sengaja tidak memakai includes/header.php dan footer.php
+ * karena tampil sebelum pengguna masuk.
+ *
  * Halaman: Beranda / Pilih Peran
  * Fungsi: DFD Level 0 memuat tiga aktor (Pemilik, Manajer, Pelanggan)
  * yang masing-masing memiliki alur "Kredensial login" ke proses 1.0.
  * Halaman ini meminta pengguna memilih jalur masuknya.
  */
 
+// Muat bootstrap: konfigurasi, sesi, helper, dan service.
 require_once __DIR__ . '/includes/init.php';
 
+// Pengguna yang sudah punya sesi aktif tidak perlu melihat pilihan peran.
 if (sudahLogin()) {
     redirect(urlBerandaSesuaiPeran());
 }

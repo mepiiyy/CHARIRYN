@@ -3,12 +3,21 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman login pemilik dan manajer.
+ * Gunanya : Memeriksa kredensial staf dan membuat sesi bila benar.
+ * Alur    : Pengguna mengirim form -> server memeriksa input -> service memverifikasi -> sesi atau redirect diperbarui.
+ * Terhubung ke: PenggunaService, helpers/autentikasi.php, tabel users.
+ */
+
+/**
  * Halaman: Masuk - Pemilik & Manajer (proses 1.1-1.3)
  * Fungsi: Autentikasi untuk aktor Pemilik dan Manajer.
  *
  * Pelanggan memakai halaman terpisah (auth/login-pelanggan.php).
  * Keduanya memakai proses 1.0 (Autentikasi & Sesi) yang sama.
  */
+
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
 
 require_once __DIR__ . '/../includes/init.php';
 
@@ -18,6 +27,8 @@ if (sudahLogin()) {
 
 $username = '';
 $kesalahan = [];
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = bersihkan($_POST['username'] ?? '');

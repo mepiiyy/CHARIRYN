@@ -1,3 +1,9 @@
+#
+# Apa ini: aturan Apache untuk permintaan HTTP ke proyek.
+# Gunanya: mencegah daftar folder dan membatasi akses langsung ke berkas internal.
+# Alur: Apache membaca aturan ini sebelum menyajikan berkas dari DocumentRoot.
+# Terhubung ke: database/*.sql, logs/*.log, berkas .env, dan storage/.htaccess.
+
 Options -Indexes
 ServerSignature Off
 

@@ -3,11 +3,21 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman pelanggan pada modul Laporan.
+ * Gunanya : Menyajikan laporan pelanggan dengan filter.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/LaporanService.php, helpers/*, tabel pelanggan, piutang, pembayaran.
+ */
+
+/**
  * Halaman: Laporan Pelanggan
  * Fungsi: Rekap data pelanggan beserta ringkasan piutangnya
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Pastikan peran pengguna berhak membuka laporan ini.
 requireLaporan();
 
 $judul_halaman = 'Laporan Pelanggan';
@@ -16,9 +26,13 @@ $halaman_aktif = 'laporan-pelanggan';
 
 $laporan_aktif = 'pelanggan';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
 
 require_once BASE_PATH . '/includes/nav-laporan.php';
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 

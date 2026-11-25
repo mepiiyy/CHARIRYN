@@ -1,3 +1,7 @@
+/* Apa ini : Kerangka halaman utama, sidebar, header, dan area konten.
+   Gunanya : Menjaga tampilan konsisten di semua halaman.
+   Alur    : variables.css menyediakan nilai bersama -> aturan di berkas ini diterapkan pada class HTML.
+   Terhubung ke: includes/kepala.php, assets/css/variables.css, dan class HTML pada halaman. */
 .tata-letak { min-height: 100vh; display: flex; background: var(--warna-latar); }
 .tata-letak-utama {
     flex: 1;
@@ -5,7 +9,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: var(--color-bg) url('../img/dashboard-bg.png') no-repeat center top / cover;
+    background: var(--color-bg) url('../img/dashboard-bg.jpg') no-repeat center top / cover;
 }
 
 .sidebar {

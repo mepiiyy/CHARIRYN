@@ -3,18 +3,32 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman tambah pada modul Pelanggan.
+ * Gunanya : Menerima, memvalidasi, lalu menyimpan data baru.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PelangganService.php, helpers/*, tabel pelanggan, piutang, pembayaran.
+ */
+
+/**
  * Halaman: Tambah Pelanggan
  * Fungsi: Menyimpan data pelanggan baru
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
 
 $judul_halaman = 'Tambah Pelanggan';
 $sub_judul_halaman = 'Lengkapi data pelanggan baru';
 $halaman_aktif = 'pelanggan';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $kesalahan = [];
@@ -25,6 +39,8 @@ $alamat = '';
 $noHp = '';
 $email = '';
 $status = 'aktif';
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $kode = bersihkan($_POST['kode_pelanggan'] ?? '');

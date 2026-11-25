@@ -3,11 +3,21 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman piutang pada modul Laporan.
+ * Gunanya : Menyajikan laporan piutang dengan filter.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/LaporanService.php, helpers/*, tabel pelanggan, piutang, pembayaran.
+ */
+
+/**
  * Halaman: Laporan Piutang
  * Fungsi: Rekap piutang per periode dengan filter status dan pelanggan
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Pastikan peran pengguna berhak membuka laporan ini.
 requireLaporan();
 
 $judul_halaman = 'Laporan Piutang';
@@ -16,9 +26,13 @@ $halaman_aktif = 'laporan-piutang';
 
 $laporan_aktif = 'piutang';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
 
 require_once BASE_PATH . '/includes/nav-laporan.php';
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 

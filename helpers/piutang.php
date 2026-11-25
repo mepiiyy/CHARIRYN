@@ -3,8 +3,21 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Aturan hitung dan status piutang.
+ * Gunanya : Menjaga sisa tagihan, status, serta validasi pembayaran memakai aturan yang sama.
+ * Alur    : includes/init.php memuat fungsi -> halaman atau service memanggilnya sesuai kebutuhan.
+ * Terhubung ke: PiutangService, PembayaranService, includes/init.php, tabel piutang/pembayaran.
+ */
+
+/**
  * File: Logika Bisnis Piutang
  * Fungsi: Satu-satunya tempat aturan status, sisa, dan validasi pembayaran
+ * Menghitung sisa tagihan setelah pembayaran.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param float $total jumlah total tagihan.
+ * @param float $dibayar jumlah pembayaran yang telah diterima.
+ * @return float hasil sesuai tugas fungsi.
  */
 
 function hitungSisaPiutang(float $total, float $dibayar): float
@@ -17,6 +30,14 @@ function hitungSisaPiutang(float $total, float $dibayar): float
  * - Sisa <= 0                     => Lunas
  * - Sudah ada pembayaran          => Sebagian (atau Jatuh Tempo bila lewat)
  * - Belum ada pembayaran          => Belum Lunas (atau Jatuh Tempo bila lewat)
+ * Menentukan status dari saldo dan tanggal jatuh tempo.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param float $total jumlah total tagihan.
+ * @param float $dibayar jumlah pembayaran yang telah diterima.
+ * @param string $jatuhTempo tanggal jatuh tempo piutang.
+ * @param ?string $tanggalSekarang nilai yang diperlukan fungsi.
+ * @return string hasil sesuai tugas fungsi.
  */
 function tentukanStatusPiutang(float $total, float $dibayar, string $jatuhTempo, ?string $tanggalSekarang = null): string
 {
@@ -36,6 +57,14 @@ function tentukanStatusPiutang(float $total, float $dibayar, string $jatuhTempo,
     return $terlambat ? 'Jatuh Tempo' : 'Belum Lunas';
 }
 
+/**
+ * Menjumlahkan pembayaran berlaku untuk satu piutang.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param PDO $pdo koneksi PDO aktif.
+ * @param int $idPiutang ID piutang yang menjadi sasaran atau filter.
+ * @return float hasil sesuai tugas fungsi.
+ */
 function hitungTotalPembayaran(PDO $pdo, int $idPiutang): float
 {
     // Hanya pembayaran yang masih berlaku (belum dibatalkan) yang
@@ -52,6 +81,12 @@ function hitungTotalPembayaran(PDO $pdo, int $idPiutang): float
 /**
  * Menghitung ulang jumlah_dibayar, sisa_piutang, dan status sebuah piutang.
  * Dipanggil di dalam transaksi database setiap kali pembayaran berubah.
+ * Menghitung ulang jumlah dibayar, sisa, dan status piutang.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param PDO $pdo koneksi PDO aktif.
+ * @param int $idPiutang ID piutang yang menjadi sasaran atau filter.
+ * @return void hasil sesuai tugas fungsi.
  */
 function perbaruiRingkasanPiutang(PDO $pdo, int $idPiutang): void
 {
@@ -84,9 +119,14 @@ function perbaruiRingkasanPiutang(PDO $pdo, int $idPiutang): void
 /**
  * Menyinkronkan status menjadi "Jatuh Tempo" untuk piutang yang tanggal
  * jatuh temponya sudah lewat. Dijalankan otomatis saat aplikasi diakses.
+ * Menyelaraskan status piutang yang melewati jatuh tempo.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return void hasil sesuai tugas fungsi.
  */
 function perbaruiStatusOtomatis(): void
 {
+    // Buka koneksi database yang dipakai service pada halaman ini.
     $pdo = koneksiDatabase();
     $pdo->exec(
         "UPDATE piutang
@@ -99,6 +139,14 @@ function perbaruiStatusOtomatis(): void
 /**
  * Validasi pembayaran terhadap sisa piutang.
  * Saat mengubah pembayaran, jumlah lama dikeluarkan sementara (abaikanIdPembayaran).
+ * Memastikan nominal pembayaran tidak melebihi sisa tagihan.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param PDO $pdo koneksi PDO aktif.
+ * @param mixed $idPiutang ID piutang yang menjadi sasaran atau filter.
+ * @param mixed $jumlah nominal pembayaran.
+ * @param ?int $abaikanIdPembayaran nilai yang diperlukan fungsi.
+ * @return array hasil sesuai tugas fungsi.
  */
 function validasiPembayaran(PDO $pdo, mixed $idPiutang, mixed $jumlah, ?int $abaikanIdPembayaran = null): array
 {
@@ -152,6 +200,13 @@ function validasiPembayaran(PDO $pdo, mixed $idPiutang, mixed $jumlah, ?int $aba
     return ['ok' => true, 'pesan' => '', 'sisa' => $sisaEfektif];
 }
 
+/**
+ * Membuat label HTML status piutang.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param string $status status yang dipakai sebagai filter.
+ * @return string hasil sesuai tugas fungsi.
+ */
 function badgeStatus(string $status): string
 {
     $kelas = match ($status) {
@@ -167,6 +222,11 @@ function badgeStatus(string $status): string
 /**
  * Indikator status untuk pengajuan pembayaran (D5) dan permintaan
  * perubahan profil (D6). Keduanya memakai tiga status yang sama.
+ * Membuat label HTML status verifikasi.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param string $status status yang dipakai sebagai filter.
+ * @return string hasil sesuai tugas fungsi.
  */
 function badgeStatusVerifikasi(string $status): string
 {

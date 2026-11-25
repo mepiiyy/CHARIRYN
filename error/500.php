@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman kesalahan server.
+ * Gunanya : Menampilkan pesan aman saat terjadi kesalahan tanpa memuat bootstrap lagi.
+ * Alur    : Tetapkan kode HTTP -> tampilkan pesan aman -> arahkan pengguna kembali bila memungkinkan.
+ * Terhubung ke: handler kesalahan di includes/init.php, helpers/kesalahan.php.
+ */
+
+/**
  * Halaman: Kesalahan Server (500)
  * Halaman ini TIDAK memuat init.php agar aman dari perulangan.
  */

@@ -3,7 +3,19 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Potongan kerangka halaman bersama.
+ * Gunanya : Menghindari pengulangan layout, navigasi, pesan, dan bootstrap.
+ * Alur    : Halaman memuat bootstrap dan potongan layout -> browser menerima kerangka serta aset bersama.
+ * Terhubung ke: halaman staf, helpers/*, assets/css/*, assets/js/*.
+ */
+
+/**
  * Sidebar navigasi utama (menu pengguna disesuaikan dengan role)
+ * Memilih kode SVG berdasarkan nama ikon menu.
+ * Dipanggil oleh: halaman terkait pada modul includes.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param string $nama nilai yang diperlukan fungsi.
+ * @return string hasil sesuai tugas fungsi.
  */
 
 function ikonMenu(string $nama): string
@@ -27,6 +39,16 @@ function ikonMenu(string $nama): string
     return $svg . $isi . '</svg>';
 }
 
+/**
+ * Menyusun satu tautan menu dan status aktifnya.
+ * Dipanggil oleh: halaman terkait pada modul includes.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param string $ikon nilai yang diperlukan fungsi.
+ * @param string $label nama kolom untuk pesan yang mudah dipahami.
+ * @param string $url nilai yang diperlukan fungsi.
+ * @param string $kunci nilai yang diperlukan fungsi.
+ * @return string hasil sesuai tugas fungsi.
+ */
 function itemMenu(string $ikon, string $label, string $url, string $kunci): string
 {
     global $halaman_aktif;
@@ -62,8 +84,7 @@ $beranda_sidebar = urlBerandaSesuaiPeran();
             <?= itemMenu('dashboard', 'Dashboard', BASE_URL . 'portal/index.php', 'portal') ?>
             <?= itemMenu('pembayaran', 'Ajukan Pembayaran', BASE_URL . 'portal/pengajuan.php', 'portal-pengajuan') ?>
             <?= itemMenu('pengajuan', 'Status Pengajuan', BASE_URL . 'portal/status-pengajuan.php', 'portal-status') ?>
-            <?= itemMenu('permintaan', 'Ubah Profil', BASE_URL . 'portal/profil.php', 'portal-profil') ?>
-            <?= itemMenu('pengguna', 'Akun Saya', BASE_URL . 'portal/akun.php', 'portal-akun') ?>
+            <?= itemMenu('pengguna', 'Kelola Akun', BASE_URL . 'portal/akun.php', 'portal-akun') ?>
         <?php elseif ($peran_sidebar === 'pemilik'): ?>
             <p class="grup-menu">Laporan</p>
             <?= itemMenu('laporan', 'Laporan Piutang', BASE_URL . 'laporan/piutang.php', 'laporan-piutang') ?>

@@ -3,14 +3,31 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Service Laporan yang berisi aturan bisnis dan query.
+ * Gunanya : Mengambil data gabungan untuk halaman laporan.
+ * Alur    : Halaman memanggil metode -> service menjalankan query PDO -> hasil dikembalikan ke halaman.
+ * Terhubung ke: halaman modul, config/database.php, helpers/*, tabel pelanggan, piutang, pembayaran
+ */
+
+/**
  * Service: Laporan
  * Fungsi: Agregasi data untuk laporan (pelanggan, piutang, jatuh tempo, pembayaran)
  */
 
 class LaporanService
 {
+    /**
+     * Mengambil data pelanggan untuk laporan.
+     * Dipanggil oleh: halaman pada modul laporan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $cari kata kunci pencarian, kosong berarti tanpa filter.
+     * @param string $status status yang dipakai sebagai filter.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function laporanPelanggan(PDO $pdo, string $cari = '', string $status = ''): array
     {
+        // Siapkan filter opsional; SQL hanya menambahkan syarat yang memang dipilih pengguna.
         $kondisi = [];
         $parameter = [];
 
@@ -36,6 +53,8 @@ class LaporanService
                 ' . $where . '
                 ORDER BY p.nama_pelanggan ASC';
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute($parameter);
         $data = $stmt->fetchAll();
@@ -50,8 +69,21 @@ class LaporanService
         return ['data' => $data, 'total' => $total];
     }
 
+    /**
+     * Mengambil data piutang dengan filter laporan.
+     * Dipanggil oleh: halaman pada modul laporan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $cari kata kunci pencarian, kosong berarti tanpa filter.
+     * @param ?string $dari batas tanggal awal filter, bila diisi.
+     * @param ?string $sampai batas tanggal akhir filter, bila diisi.
+     * @param string $status status yang dipakai sebagai filter.
+     * @param int $idPelanggan ID pelanggan yang menjadi sasaran atau filter.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function laporanPiutang(PDO $pdo, string $cari = '', ?string $dari = null, ?string $sampai = null, string $status = '', int $idPelanggan = 0): array
     {
+        // Siapkan filter opsional; SQL hanya menambahkan syarat yang memang dipilih pengguna.
         $kondisi = [];
         $parameter = [];
 
@@ -82,6 +114,8 @@ class LaporanService
 
         $where = $kondisi !== [] ? 'WHERE ' . implode(' AND ', $kondisi) : '';
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare(
             'SELECT
                 p.id_piutang, p.no_transaksi, p.tanggal_transaksi, p.total_piutang,
@@ -94,6 +128,8 @@ class LaporanService
         );
         $stmt->execute($parameter);
         $data = $stmt->fetchAll();
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare(
             'SELECT
@@ -111,8 +147,20 @@ class LaporanService
         return ['data' => $data, 'total' => $total];
     }
 
+    /**
+     * Mengambil piutang untuk laporan jatuh tempo.
+     * Dipanggil oleh: halaman pada modul laporan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $cari kata kunci pencarian, kosong berarti tanpa filter.
+     * @param ?string $dari batas tanggal awal filter, bila diisi.
+     * @param ?string $sampai batas tanggal akhir filter, bila diisi.
+     * @param string $status status yang dipakai sebagai filter.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function laporanJatuhTempo(PDO $pdo, string $cari = '', ?string $dari = null, ?string $sampai = null, string $status = ''): array
     {
+        // Siapkan filter opsional; SQL hanya menambahkan syarat yang memang dipilih pengguna.
         $kondisi = [];
         $parameter = [];
 
@@ -138,6 +186,8 @@ class LaporanService
 
         $where = $kondisi !== [] ? 'WHERE ' . implode(' AND ', $kondisi) : '';
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare(
             'SELECT
                 p.id_piutang, p.no_transaksi, p.tanggal_transaksi, p.total_piutang,
@@ -150,6 +200,8 @@ class LaporanService
         );
         $stmt->execute($parameter);
         $data = $stmt->fetchAll();
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare(
             'SELECT
@@ -167,8 +219,21 @@ class LaporanService
         return ['data' => $data, 'total' => $total];
     }
 
+    /**
+     * Mengambil pembayaran dengan filter laporan.
+     * Dipanggil oleh: halaman pada modul laporan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $cari kata kunci pencarian, kosong berarti tanpa filter.
+     * @param ?string $dari batas tanggal awal filter, bila diisi.
+     * @param ?string $sampai batas tanggal akhir filter, bila diisi.
+     * @param string $metode metode pembayaran untuk filter atau pencatatan.
+     * @param int $idPelanggan ID pelanggan yang menjadi sasaran atau filter.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function laporanPembayaran(PDO $pdo, string $cari = '', ?string $dari = null, ?string $sampai = null, string $metode = '', int $idPelanggan = 0): array
     {
+        // Siapkan filter opsional; SQL hanya menambahkan syarat yang memang dipilih pengguna.
         $kondisi = [];
         $parameter = [];
 
@@ -199,6 +264,8 @@ class LaporanService
 
         $where = $kondisi !== [] ? 'WHERE ' . implode(' AND ', $kondisi) : '';
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare(
             'SELECT
                 b.id_pembayaran, b.tanggal_pembayaran, b.jumlah_bayar, b.metode_pembayaran, b.keterangan,
@@ -215,6 +282,7 @@ class LaporanService
         $data = $stmt->fetchAll();
 
         // Total pembayaran sah: pembayaran yang dibatalkan tidak dihitung.
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'SELECT
                 COUNT(*) AS jumlah,

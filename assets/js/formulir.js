@@ -1,10 +1,15 @@
 /**
  * formulir.js
  * Format angka Rupiah pada input dan pratinjau saldo pembayaran.
- */
+  * Gunanya : Memformat nominal Rupiah dan memperbarui pratinjau pembayaran.
+ * Alur    : Cari elemen terkait -> pasang event -> perbarui tampilan atau perilaku browser.
+ * Dipakai oleh: includes/footer.php.
+ * Terhubung ke: elemen HTML dengan ID/class dan atribut data.
+*/
 (function () {
     'use strict';
 
+    /** Mengubah angka menjadi teks nominal Rupiah untuk pratinjau. */
     function formatRupiah(nilai) {
         return 'Rp ' + Number(nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 });
     }
@@ -51,6 +56,7 @@
             peringatan: document.getElementById('peringatanLebih'),
         };
 
+        /** Menyegarkan informasi saldo berdasarkan piutang dan nominal pembayaran terpilih. */
         function perbarui() {
             var data = null;
             for (var i = 0; i < daftarPiutang.length; i++) {

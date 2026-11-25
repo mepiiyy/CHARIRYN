@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Service Profil yang berisi aturan bisnis dan query.
+ * Gunanya : Menyimpan dan meninjau permintaan perubahan profil.
+ * Alur    : Halaman memanggil metode -> service menjalankan query PDO -> hasil dikembalikan ke halaman.
+ * Terhubung ke: halaman modul, config/database.php, helpers/*, tabel perubahan_profil, pelanggan, users
+ */
+
+/**
  * Service: Permintaan Perubahan Profil (D6 - DFD 2.4 dan 8.7)
  * Fungsi: Mencatat permintaan perubahan profil pelanggan, meninjau dan
  * memutuskan. Profil AKTIF hanya berubah setelah Manajer menyetujui.
@@ -24,9 +31,17 @@ class ProfilService
 
     /**
      * Daftar permintaan untuk Manajer (DFD 2.4).
+     * Mengambil daftar pengajuan/perubahan untuk ditinjau.
+     * Dipanggil oleh: halaman pada modul profil.
+     * Data terkait: perubahan_profil, pelanggan, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $status status yang dipakai sebagai filter.
+     * @param string $cari kata kunci pencarian, kosong berarti tanpa filter.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function daftar(PDO $pdo, string $status = '', string $cari = ''): array
     {
+        // Siapkan filter opsional; SQL hanya menambahkan syarat yang memang dipilih pengguna.
         $kondisi = [];
         $parameter = [];
 
@@ -44,6 +59,8 @@ class ProfilService
         }
 
         $where = $kondisi !== [] ? 'WHERE ' . implode(' AND ', $kondisi) : '';
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare(
             'SELECT pp.id_permintaan, pp.data_baru, pp.alasan, pp.status, pp.alasan_penolakan,
@@ -63,8 +80,17 @@ class ProfilService
         return $stmt->fetchAll();
     }
 
+    /**
+     * Mengambil satu baris berdasarkan ID atau mengembalikan null.
+     * Dipanggil oleh: halaman pada modul profil.
+     * Data terkait: perubahan_profil, pelanggan, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @return ?array hasil sesuai tugas fungsi.
+     */
     public static function ambil(PDO $pdo, int $id): ?array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'SELECT pp.*, pl.kode_pelanggan, pl.nama_pelanggan, pl.alamat, pl.no_hp, pl.email, pl.status AS status_pelanggan,
                     u.nama AS nama_pengaju,
@@ -84,9 +110,16 @@ class ProfilService
 
     /**
      * Permintaan milik satu pelanggan (DFD 8.7).
+     * Mengambil pengajuan milik pelanggan yang sedang login.
+     * Dipanggil oleh: halaman pada modul profil.
+     * Data terkait: perubahan_profil, pelanggan, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $idPelanggan ID pelanggan yang menjadi sasaran atau filter.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function daftarMilikPelanggan(PDO $pdo, int $idPelanggan): array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'SELECT pp.* FROM permintaan_profil AS pp
              WHERE pp.id_pelanggan = :id
@@ -101,6 +134,15 @@ class ProfilService
      * Pelanggan mengajukan perubahan profil (DFD 8.7).
      * $data berisi nilai baru per field; hanya field yang berubah
      * yang disimpan.
+     * Mencatat pengajuan baru untuk ditinjau.
+     * Dipanggil oleh: halaman pada modul profil.
+     * Data terkait: perubahan_profil, pelanggan, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $idPelanggan ID pelanggan yang menjadi sasaran atau filter.
+     * @param int $idUser ID pengguna yang sedang melakukan aksi.
+     * @param array $data nilai form yang telah diterima dari halaman pemanggil.
+     * @param string $alasan alasan perubahan atau pembatalan.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function buat(PDO $pdo, int $idPelanggan, int $idUser, array $data, string $alasan): array
     {
@@ -108,6 +150,8 @@ class ProfilService
         if ($alasan === '') {
             return ['ok' => false, 'pesan' => 'Alasan perubahan wajib diisi.'];
         }
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare('SELECT * FROM pelanggan WHERE id_pelanggan = :id LIMIT 1');
         $stmt->execute([':id' => $idPelanggan]);
@@ -152,6 +196,7 @@ class ProfilService
         }
 
         try {
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
             $stmt = $pdo->prepare(
                 "INSERT INTO permintaan_profil (id_pelanggan, id_user, data_baru, alasan, status)
                  VALUES (:id_pelanggan, :id_user, :data_baru, :alasan, 'menunggu')"
@@ -178,11 +223,21 @@ class ProfilService
     /**
      * Manajer menyetujui permintaan (DFD 2.4).
      * Data yang disetujui baru ditulis ke profil aktif.
+     * Menyetujui pengajuan dan menerapkan perubahannya.
+     * Dipanggil oleh: halaman pada modul profil.
+     * Data terkait: perubahan_profil, pelanggan, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @param int $idUserVerifikasi ID staf yang mencatat keputusan verifikasi.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function setujui(PDO $pdo, int $id, int $idUserVerifikasi): array
     {
         try {
+            // Kelompokkan beberapa perubahan agar semuanya berhasil bersama atau dibatalkan bersama.
             $pdo->beginTransaction();
+
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
             $stmt = $pdo->prepare('SELECT * FROM permintaan_profil WHERE id_permintaan = :id FOR UPDATE');
             $stmt->execute([':id' => $id]);
@@ -229,12 +284,15 @@ class ProfilService
 
             // Nama akun (D1) mengikuti nama pelanggan yang baru disetujui.
             if (isset($perubahan['nama_pelanggan'])) {
+                // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
                 $stmt = $pdo->prepare('UPDATE users SET nama = :nama WHERE id_pelanggan = :id AND role = \'pelanggan\'');
                 $stmt->execute([
                     ':nama' => (string) $perubahan['nama_pelanggan'],
                     ':id' => (int) $permintaan['id_pelanggan'],
                 ]);
             }
+
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
             $stmt = $pdo->prepare(
                 "UPDATE permintaan_profil
@@ -258,6 +316,14 @@ class ProfilService
 
     /**
      * Manajer menolak permintaan (DFD 2.4). Profil aktif tetap apa adanya.
+     * Menolak pengajuan dan menyimpan alasannya.
+     * Dipanggil oleh: halaman pada modul profil.
+     * Data terkait: perubahan_profil, pelanggan, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @param int $idUserVerifikasi ID staf yang mencatat keputusan verifikasi.
+     * @param string $alasan alasan perubahan atau pembatalan.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function tolak(PDO $pdo, int $id, int $idUserVerifikasi, string $alasan): array
     {
@@ -267,7 +333,10 @@ class ProfilService
         }
 
         try {
+            // Kelompokkan beberapa perubahan agar semuanya berhasil bersama atau dibatalkan bersama.
             $pdo->beginTransaction();
+
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
             $stmt = $pdo->prepare('SELECT status FROM permintaan_profil WHERE id_permintaan = :id FOR UPDATE');
             $stmt->execute([':id' => $id]);
@@ -284,6 +353,8 @@ class ProfilService
 
                 return ['ok' => false, 'pesan' => 'Permintaan ini sudah diproses sebelumnya.'];
             }
+
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
             $stmt = $pdo->prepare(
                 "UPDATE permintaan_profil
@@ -312,6 +383,11 @@ class ProfilService
 
     /**
      * Membaca data perubahan yang tersimpan (JSON) menjadi array.
+     * Membaca rincian perubahan profil yang disimpan sebagai JSON.
+     * Dipanggil oleh: halaman pada modul profil.
+     * Data terkait: perubahan_profil, pelanggan, users.
+     * @param ?string $json nilai yang diperlukan fungsi.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function perubahanDari(?string $json): array
     {

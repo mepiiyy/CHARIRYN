@@ -3,8 +3,20 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Validasi masukan dan perlindungan form.
+ * Gunanya : Memeriksa nilai, token CSRF, ID URL, dan unggahan bukti di sisi server.
+ * Alur    : includes/init.php memuat fungsi -> halaman atau service memanggilnya sesuai kebutuhan.
+ * Terhubung ke: form aplikasi, services/*, storage/bukti.
+ */
+
+/**
  * File: Validasi
  * Fungsi: Validasi input sisi server + mekanisme CSRF
+ * Menormalkan masukan menjadi teks tanpa spasi tepi.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param mixed $nilai nilai masukan yang akan diperiksa atau diformat.
+ * @return string hasil sesuai tugas fungsi.
  */
 
 function bersihkan(mixed $nilai): string
@@ -16,11 +28,27 @@ function bersihkan(mixed $nilai): string
     return trim((string) $nilai);
 }
 
+/**
+ * Meng-escape karakter khusus pada pencarian SQL LIKE.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param string $nilai nilai masukan yang akan diperiksa atau diformat.
+ * @return string hasil sesuai tugas fungsi.
+ */
 function escapeLike(string $nilai): string
 {
     return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $nilai);
 }
 
+/**
+ * Menambahkan kesalahan bila nilai wajib kosong.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?string $nilai nilai masukan yang akan diperiksa atau diformat.
+ * @param string $label nama kolom untuk pesan yang mudah dipahami.
+ * @param array $kesalahan daftar pesan kesalahan yang dapat ditambah oleh fungsi.
+ * @return void hasil sesuai tugas fungsi.
+ */
 function validasiWajib(?string $nilai, string $label, array &$kesalahan): void
 {
     if (bersihkan($nilai) === '') {
@@ -28,6 +56,15 @@ function validasiWajib(?string $nilai, string $label, array &$kesalahan): void
     }
 }
 
+/**
+ * Memeriksa bentuk alamat email.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?string $nilai nilai masukan yang akan diperiksa atau diformat.
+ * @param string $label nama kolom untuk pesan yang mudah dipahami.
+ * @param array $kesalahan daftar pesan kesalahan yang dapat ditambah oleh fungsi.
+ * @return void hasil sesuai tugas fungsi.
+ */
 function validasiEmail(?string $nilai, string $label, array &$kesalahan): void
 {
     $nilai = bersihkan($nilai);
@@ -39,6 +76,11 @@ function validasiEmail(?string $nilai, string $label, array &$kesalahan): void
 
 /**
  * Mengubah masukan angka Rupiah (mis. 1.500.000 atau 1500000,50) menjadi float.
+ * Mengubah teks nominal Rupiah menjadi angka.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?string $nilai nilai masukan yang akan diperiksa atau diformat.
+ * @return float hasil sesuai tugas fungsi.
  */
 function parseAngkaRupiah(?string $nilai): float
 {
@@ -47,6 +89,15 @@ function parseAngkaRupiah(?string $nilai): float
     return (float) $teks;
 }
 
+/**
+ * Memastikan angka lebih besar dari nol.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param float $nilai nilai masukan yang akan diperiksa atau diformat.
+ * @param string $label nama kolom untuk pesan yang mudah dipahami.
+ * @param array $kesalahan daftar pesan kesalahan yang dapat ditambah oleh fungsi.
+ * @return void hasil sesuai tugas fungsi.
+ */
 function validasiAngkaPositif(float $nilai, string $label, array &$kesalahan): void
 {
     if ($nilai <= 0) {
@@ -54,6 +105,15 @@ function validasiAngkaPositif(float $nilai, string $label, array &$kesalahan): v
     }
 }
 
+/**
+ * Memeriksa apakah tanggal masukan valid.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?string $nilai nilai masukan yang akan diperiksa atau diformat.
+ * @param string $label nama kolom untuk pesan yang mudah dipahami.
+ * @param array $kesalahan daftar pesan kesalahan yang dapat ditambah oleh fungsi.
+ * @return void hasil sesuai tugas fungsi.
+ */
 function validasiTanggal(?string $nilai, string $label, array &$kesalahan): void
 {
     $asli = bersihkan($nilai);
@@ -69,6 +129,12 @@ function validasiTanggal(?string $nilai, string $label, array &$kesalahan): void
     }
 }
 
+/**
+ * Membuat atau mengambil token keamanan form dari sesi.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return string hasil sesuai tugas fungsi.
+ */
 function buatTokenCsrf(): string
 {
     if (empty($_SESSION['token_csrf'])) {
@@ -78,6 +144,13 @@ function buatTokenCsrf(): string
     return $_SESSION['token_csrf'];
 }
 
+/**
+ * Mencocokkan token form dengan token yang tersimpan di sesi.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?string $token token aktivasi atau keamanan yang diterima.
+ * @return bool hasil sesuai tugas fungsi.
+ */
 function cekTokenCsrf(?string $token): bool
 {
     return isset($_SESSION['token_csrf'])
@@ -85,11 +158,23 @@ function cekTokenCsrf(?string $token): bool
         && hash_equals($_SESSION['token_csrf'], $token);
 }
 
+/**
+ * Membentuk input tersembunyi token CSRF.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return string hasil sesuai tugas fungsi.
+ */
 function fieldCsrf(): string
 {
     return '<input type="hidden" name="token_csrf" value="' . e(buatTokenCsrf()) . '">';
 }
 
+/**
+ * Mewajibkan endpoint menerima metode POST.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return void hasil sesuai tugas fungsi.
+ */
 function cekMetodePost(): void
 {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -97,6 +182,12 @@ function cekMetodePost(): void
     }
 }
 
+/**
+ * Membaca ID angka dari parameter URL.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return ?int hasil sesuai tugas fungsi.
+ */
 function ambilIdDariGet(): ?int
 {
     $id = $_GET['id'] ?? null;
@@ -112,6 +203,12 @@ function ambilIdDariGet(): ?int
  * Validasi berkas unggahan bukti pembayaran (DFD 8.5).
  * Mengembalikan ['ok' => bool, 'pesan' => string, 'nama' => string].
  * Nama berkas disimpan acak supaya URL publik tidak dapat ditebak.
+ * Memeriksa ukuran, tipe, dan status unggahan bukti.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?array $berkas nilai yang diperlukan fungsi.
+ * @param int $maksBytes ukuran maksimum berkas dalam byte.
+ * @return array hasil sesuai tugas fungsi.
  */
 function validasiUnggahanBukti(?array $berkas, int $maksBytes = 2097152): array
 {
@@ -171,6 +268,11 @@ function validasiUnggahanBukti(?array $berkas, int $maksBytes = 2097152): array
  * Menyimpan berkas bukti pembayaran ke folder penyimpanan privat.
  * Folder ini tidak dapat diakses lewat HTTP; berkas hanya dibuka
  * lewat endpoint yang memeriksa hak akses.
+ * Memindahkan bukti tervalidasi ke penyimpanan privat.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param string $namaAcak nilai yang diperlukan fungsi.
+ * @return array hasil sesuai tugas fungsi.
  */
 function simpanBerkasBukti(string $namaAcak): array
 {
@@ -201,6 +303,11 @@ function simpanBerkasBukti(string $namaAcak): array
 
 /**
  * Menghapus berkas bukti pembayaran dari penyimpanan.
+ * Menghapus file bukti dari penyimpanan privat.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?string $namaAcak nilai yang diperlukan fungsi.
+ * @return void hasil sesuai tugas fungsi.
  */
 function hapusBerkasBukti(?string $namaAcak): void
 {

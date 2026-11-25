@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Service Pengguna yang berisi aturan bisnis dan query.
+ * Gunanya : Mengautentikasi serta mengelola akun pelanggan.
+ * Alur    : Halaman memanggil metode -> service menjalankan query PDO -> hasil dikembalikan ke halaman.
+ * Terhubung ke: halaman modul, config/database.php, helpers/*, tabel users, pelanggan
+ */
+
+/**
  * Service: Pengguna
  * Fungsi: Autentikasi dan pengelolaan akun pelanggan (D1).
  *
@@ -12,8 +19,18 @@ declare(strict_types=1);
 
 class PenggunaService
 {
+    /**
+     * Memeriksa kredensial akun dan mengembalikan identitas pengguna.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $username nama akun yang dicari atau diverifikasi.
+     * @param string $kataSandi kata sandi yang akan diperiksa.
+     * @return ?array hasil sesuai tugas fungsi.
+     */
     public static function autentikasi(PDO $pdo, string $username, string $kataSandi): ?array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'SELECT u.id_user, u.username, u.password, u.nama, u.role, u.status, u.id_pelanggan,
                     pl.nama_pelanggan
@@ -39,6 +56,15 @@ class PenggunaService
         return $user;
     }
 
+    /**
+     * Mengambil daftar akun pelanggan dengan filter.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $cari kata kunci pencarian, kosong berarti tanpa filter.
+     * @param string $status status yang dipakai sebagai filter.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function ambilAkunPelanggan(PDO $pdo, string $cari = '', string $status = ''): array
     {
         $kondisi = ["u.role = 'pelanggan'"];
@@ -56,6 +82,8 @@ class PenggunaService
             $parameter[':status'] = $status;
         }
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare(
             'SELECT u.id_user, u.username, u.nama, u.role, u.status, u.id_pelanggan,
                     u.created_at, u.updated_at, u.token_aktivasi, u.token_aktivasi_berakhir,
@@ -70,8 +98,17 @@ class PenggunaService
         return $stmt->fetchAll();
     }
 
+    /**
+     * Mengambil satu akun pelanggan.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @return ?array hasil sesuai tugas fungsi.
+     */
     public static function ambilAkunPelangganById(PDO $pdo, int $id): ?array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             "SELECT u.id_user, u.username, u.nama, u.role, u.status, u.id_pelanggan,
                     u.created_at, u.updated_at, u.token_aktivasi, u.token_aktivasi_berakhir,
@@ -87,6 +124,13 @@ class PenggunaService
         return $hasil === false ? null : $hasil;
     }
 
+    /**
+     * Mengambil pelanggan yang belum punya akun portal.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function pelangganTanpaAkun(PDO $pdo): array
     {
         return $pdo->query(
@@ -99,6 +143,15 @@ class PenggunaService
         )->fetchAll();
     }
 
+    /**
+     * Memeriksa relasi pelanggan dengan akun pengguna.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $idPelanggan ID pelanggan yang menjadi sasaran atau filter.
+     * @param ?int $abaikanId ID yang dikecualikan saat memeriksa keunikan.
+     * @return bool hasil sesuai tugas fungsi.
+     */
     public static function pelangganPunyaAkun(PDO $pdo, int $idPelanggan, ?int $abaikanId = null): bool
     {
         $sql = 'SELECT COUNT(*) FROM users WHERE id_pelanggan = :id';
@@ -109,12 +162,23 @@ class PenggunaService
             $parameter[':id_user'] = $abaikanId;
         }
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute($parameter);
 
         return (int) $stmt->fetchColumn() > 0;
     }
 
+    /**
+     * Memeriksa keunikan username.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $username nama akun yang dicari atau diverifikasi.
+     * @param ?int $abaikanId ID yang dikecualikan saat memeriksa keunikan.
+     * @return bool hasil sesuai tugas fungsi.
+     */
     public static function usernameTersedia(PDO $pdo, string $username, ?int $abaikanId = null): bool
     {
         $sql = 'SELECT COUNT(*) FROM users WHERE username = :username';
@@ -124,6 +188,8 @@ class PenggunaService
             $sql .= ' AND id_user <> :id';
             $parameter[':id'] = $abaikanId;
         }
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute($parameter);
@@ -136,6 +202,12 @@ class PenggunaService
      * Akun disimpan dengan status "belum aktif" beserta token aktivasi.
      * Pelanggan sendiri yang menetapkan kata sandi lewat token tersebut
      * (DFD 7.4), sehingga manajer tidak pernah menentukan sandi awal.
+     * Membuat akun pelanggan dan token aktivasi.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param array $data nilai form yang telah diterima dari halaman pemanggil.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function buatAkunPelanggan(PDO $pdo, array $data): array
     {
@@ -163,6 +235,7 @@ class PenggunaService
         $berakhir = date('Y-m-d H:i:s', time() + 86400); // berlaku 24 jam
 
         try {
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
             $stmt = $pdo->prepare(
                 "INSERT INTO users (id_pelanggan, username, password, nama, role, status, token_aktivasi, token_aktivasi_berakhir)
                  VALUES (:id_pelanggan, :username, :password, :nama, 'pelanggan', 'belum aktif', :token, :berakhir)"
@@ -193,6 +266,13 @@ class PenggunaService
     /**
      * Aktivasi akun pelanggan memakai token (DFD 7.4).
      * Token bersifat satu kali: setelah dipakai, token dihapus.
+     * Mengaktifkan akun dengan token dan kata sandi baru.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $token token aktivasi atau keamanan yang diterima.
+     * @param string $kataSandiBaru nilai yang diperlukan fungsi.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function aktivasi(PDO $pdo, string $token, string $kataSandiBaru): array
     {
@@ -205,6 +285,8 @@ class PenggunaService
         if (strlen($kataSandiBaru) < 8) {
             return ['ok' => false, 'pesan' => 'Kata sandi minimal 8 karakter.'];
         }
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare(
             "SELECT id_user, username, status, token_aktivasi_berakhir
@@ -231,6 +313,7 @@ class PenggunaService
         }
 
         try {
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
             $stmt = $pdo->prepare(
                 "UPDATE users
                  SET password = :password, status = 'aktif',
@@ -253,6 +336,12 @@ class PenggunaService
 
     /**
      * Membuat ulang token aktivasi untuk akun yang belum aktif.
+     * Membuat token aktivasi baru.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function buatTokenAktivasiBaru(PDO $pdo, int $id): array
     {
@@ -268,6 +357,8 @@ class PenggunaService
         $token = bin2hex(random_bytes(32));
         $berakhir = date('Y-m-d H:i:s', time() + 86400);
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare(
             'UPDATE users SET token_aktivasi = :token, token_aktivasi_berakhir = :berakhir WHERE id_user = :id'
         );
@@ -276,6 +367,15 @@ class PenggunaService
         return ['ok' => true, 'pesan' => 'Kode aktivasi baru dibuat.', 'token' => $token, 'berakhir' => $berakhir];
     }
 
+    /**
+     * Menyimpan hash kata sandi baru untuk akun.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @param string $password kata sandi baru yang akan disimpan.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function resetKataSandi(PDO $pdo, int $id, string $password): array
     {
         $akun = self::ambilAkunPelangganById($pdo, $id);
@@ -287,6 +387,8 @@ class PenggunaService
             return ['ok' => false, 'pesan' => 'Kata sandi minimal 8 karakter.'];
         }
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare('UPDATE users SET password = :password WHERE id_user = :id');
         $stmt->execute([
             ':password' => password_hash($password, PASSWORD_DEFAULT),
@@ -296,6 +398,15 @@ class PenggunaService
         return ['ok' => true, 'pesan' => 'Kata sandi akun berhasil direset.'];
     }
 
+    /**
+     * Mengubah status akun pelanggan.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @param string $status status yang dipakai sebagai filter.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function ubahStatusAkun(PDO $pdo, int $id, string $status): array
     {
         if (!in_array($status, ['aktif', 'nonaktif'], true)) {
@@ -316,14 +427,27 @@ class PenggunaService
             ];
         }
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare('UPDATE users SET status = :status WHERE id_user = :id');
         $stmt->execute([':status' => $status, ':id' => $id]);
 
         return ['ok' => true, 'pesan' => 'Status akun berhasil diubah menjadi ' . $status . '.'];
     }
 
+    /**
+     * Memeriksa kata sandi lama dan menyimpan kata sandi baru.
+     * Dipanggil oleh: halaman pada modul pengguna.
+     * Data terkait: users, pelanggan.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @param string $lama kata sandi lama untuk diverifikasi.
+     * @param string $baru kata sandi baru yang akan disimpan.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function ubahKataSandiSendiri(PDO $pdo, int $id, string $lama, string $baru): array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare('SELECT password FROM users WHERE id_user = :id LIMIT 1');
         $stmt->execute([':id' => $id]);
         $akun = $stmt->fetch();

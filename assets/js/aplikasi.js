@@ -1,7 +1,11 @@
 /**
  * aplikasi.js
  * Sidebar mobile, flash message, pencegahan submit ganda.
- */
+  * Gunanya : Mengatur sidebar, pesan flash, dan pencegahan kirim form berulang.
+ * Alur    : Cari elemen terkait -> pasang event -> perbarui tampilan atau perilaku browser.
+ * Dipakai oleh: includes/footer.php.
+ * Terhubung ke: elemen HTML dengan ID/class dan atribut data.
+*/
 (function () {
     'use strict';
 
@@ -11,12 +15,14 @@
     var lapisan = document.getElementById('lapisanSidebar');
     var mqDesktop = window.matchMedia('(min-width: 1024px)');
 
+    /** Menutup sidebar dan memperbarui atribut aksesibilitas tombol. */
     function tutupSidebar() {
         document.body.classList.remove('sidebar-terbuka');
         if (lapisan) { lapisan.setAttribute('hidden', ''); }
         if (tombolMenu) { tombolMenu.setAttribute('aria-expanded', 'false'); }
     }
 
+    /** Membuka sidebar pada layar kecil dan memperbarui atribut aksesibilitas. */
     function bukaSidebar() {
         document.body.classList.add('sidebar-terbuka');
         if (lapisan) { lapisan.removeAttribute('hidden'); }
@@ -29,6 +35,7 @@
         }
     } catch (err) { /* abaikan: penyimpanan tidak tersedia */ }
 
+    /** Menyesuaikan label tombol menu dengan keadaan sidebar. */
     function labelTombolMenu() {
         if (!tombolMenu) { return; }
         var ciut = document.body.classList.contains('sidebar-ciut');
@@ -99,12 +106,14 @@
     var modalBukaHalaman = document.getElementById('modalBukaHalaman');
     var modalUrl = '';
 
+    /** Menutup modal dan membersihkan isi sementara di dalamnya. */
     function tutupModal() {
         if (!modalLapisan) { return; }
         modalLapisan.setAttribute('hidden', '');
         if (modalIsi) { modalIsi.innerHTML = ''; }
     }
 
+    /** Mengisi judul dan isi modal, lalu mengembalikan apakah modal berhasil dibuka. */
     function bukaModal(judul, html) {
         if (!modalLapisan || !modalIsi || !modalJudul) { return false; }
         modalJudul.textContent = judul;
@@ -115,6 +124,7 @@
     }
 
     /* Format angka pada input Rupiah yang dimuat di dalam modal */
+    /** Memasang format Rupiah pada input yang dimuat ke dalam modal. */
     function formatRupiahModal() {
         if (!modalIsi) { return; }
         modalIsi.querySelectorAll('input[data-rupiah]').forEach(function (input) {

@@ -3,13 +3,25 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman status pengajuan pada modul Portal pelanggan.
+ * Gunanya : Menampilkan status pengajuan milik pelanggan.
+ * Alur    : Muat bootstrap -> pastikan sesi pelanggan -> batasi data dengan ID pelanggan dari sesi -> tampilkan halaman atau proses form.
+ * Terhubung ke: includes/init.php, services/PortalService.php / PengajuanService.php / ProfilService.php, helpers/*, tabel pelanggan, users, piutang, pembayaran, pengajuan.
+ */
+
+/**
  * Halaman: Status Pengajuan Pembayaran (DFD 8.6)
  * Fungsi: Pelanggan melihat status pengajuan pembayarannya beserta
  * alasan penolakan bila ada. Status dibaca langsung dari database.
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Pastikan pengguna adalah pelanggan sebelum membaca data portal.
 requirePelanggan();
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $idPelanggan = idPelangganUser();
@@ -17,6 +29,8 @@ $idPelanggan = idPelangganUser();
 $judul_halaman = 'Status Pengajuan';
 $sub_judul_halaman = 'Riwayat pengajuan pembayaran Anda';
 $halaman_aktif = 'portal-status';
+
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
 
 require_once BASE_PATH . '/includes/kepala.php';
 

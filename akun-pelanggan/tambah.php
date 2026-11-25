@@ -3,14 +3,26 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman tambah pada modul Akun pelanggan.
+ * Gunanya : Menerima, memvalidasi, lalu menyimpan data baru.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PenggunaService.php, helpers/*, tabel users, pelanggan.
+ */
+
+/**
  * Halaman: Buat Akun Pelanggan (DFD 7.2)
  * Fungsi: Manajer membuat akun pelanggan dan menyiapkan aktivasi.
  * Akun disimpan dengan status "belum aktif" beserta kode aktivasi.
  * Pelanggan sendiri yang menetapkan kata sandi (DFD 7.4).
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $daftarPelanggan = PenggunaService::pelangganTanpaAkun($pdo);
@@ -21,6 +33,8 @@ $username = '';
 $nama = '';
 $tokenAktivasi = '';
 $tokenBerakhir = '';
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = bersihkan($_POST['username'] ?? '');
@@ -64,6 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $judul_halaman = 'Buat Akun Pelanggan';
 $sub_judul_halaman = 'Hubungkan akun dengan data pelanggan';
 $halaman_aktif = 'akun-pelanggan';
+
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
 
 require_once BASE_PATH . '/includes/kepala.php';
 ?>

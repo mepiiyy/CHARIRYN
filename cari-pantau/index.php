@@ -3,20 +3,34 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman index pada modul Pencarian dan pemantauan.
+ * Gunanya : Menampilkan daftar atau ringkasan data.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PiutangService.php / PembayaranService.php, helpers/*, tabel pelanggan, piutang, pembayaran.
+ */
+
+/**
  * Halaman: Cari & Pantau Status Piutang (DFD 4.0)
  * Fungsi: Pencarian piutang berdasarkan nama pelanggan, nomor transaksi,
  * atau nominal, dengan filter status Lunas/Belum Lunas dan aksi histori.
  * Memakai catatan piutang dan perhitungan yang sama dengan halaman Transaksi.
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
 
 $judul_halaman = 'Cari & Pantau';
 $sub_judul_halaman = 'Cari piutang dan pantau status pelunasannya';
 $halaman_aktif = 'cari-pantau';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 

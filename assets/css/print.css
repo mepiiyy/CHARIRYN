@@ -1,3 +1,7 @@
+/* Apa ini : Penyesuaian halaman agar laporan mudah dicetak.
+   Gunanya : Menjaga tampilan konsisten di semua halaman.
+   Alur    : variables.css menyediakan nilai bersama -> aturan di berkas ini diterapkan pada class HTML.
+   Terhubung ke: includes/kepala.php, assets/css/variables.css, dan class HTML pada halaman. */
 @media print {
     @page { margin: 12mm; }
     body { background: #fff !important; color: #000 !important; font-size: 12px; }

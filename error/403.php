@@ -3,9 +3,18 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman akses ditolak.
+ * Gunanya : Mengirim respons HTTP 403 saat peran tidak memiliki izin.
+ * Alur    : Tetapkan kode HTTP -> tampilkan pesan aman -> arahkan pengguna kembali bila memungkinkan.
+ * Terhubung ke: helpers/otorisasi.php, includes/init.php.
+ */
+
+/**
  * Halaman: Akses Ditolak (403)
  * Fungsi: Ditampilkan saat pengguna tidak memiliki izin
  */
+
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
 
 require_once __DIR__ . '/../includes/init.php';
 

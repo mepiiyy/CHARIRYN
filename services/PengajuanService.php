@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Service Pengajuan yang berisi aturan bisnis dan query.
+ * Gunanya : Menyimpan serta meninjau pengajuan pembayaran pelanggan.
+ * Alur    : Halaman memanggil metode -> service menjalankan query PDO -> hasil dikembalikan ke halaman.
+ * Terhubung ke: halaman modul, config/database.php, helpers/*, tabel pengajuan, pelanggan, piutang, pembayaran, users
+ */
+
+/**
  * Service: Pengajuan Pembayaran (D5 - DFD 4.4 dan 8.5/8.6)
  * Fungsi: Menyimpan pengajuan pembayaran pelanggan, memverifikasinya,
  * dan membuat pembayaran resmi HANYA saat pengajuan disetujui.
@@ -18,9 +25,19 @@ class PengajuanService
 
     /**
      * Daftar pengajuan untuk Manajer (DFD 4.4).
+     * Mengambil daftar pengajuan/perubahan untuk ditinjau.
+     * Dipanggil oleh: halaman pada modul pengajuan.
+     * Data terkait: pengajuan, pelanggan, piutang, pembayaran, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $status status yang dipakai sebagai filter.
+     * @param string $cari kata kunci pencarian, kosong berarti tanpa filter.
+     * @param int $halaman nomor halaman yang diminta.
+     * @param int $perHalaman jumlah data pada setiap halaman.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function daftar(PDO $pdo, string $status = '', string $cari = '', int $halaman = 1, int $perHalaman = 10): array
     {
+        // Siapkan filter opsional; SQL hanya menambahkan syarat yang memang dipilih pengguna.
         $kondisi = [];
         $parameter = [];
 
@@ -38,6 +55,8 @@ class PengajuanService
         }
 
         $where = $kondisi !== [] ? 'WHERE ' . implode(' AND ', $kondisi) : '';
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare(
             'SELECT COUNT(*) FROM pengajuan_pembayaran AS pg
@@ -66,6 +85,8 @@ class PengajuanService
                 ORDER BY (pg.status = \'menunggu\') DESC, pg.tanggal_pengajuan DESC, pg.id_pengajuan DESC
                 LIMIT :batas OFFSET :offset';
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare($sql);
         foreach ($parameter as $kunci => $nilai) {
             $stmt->bindValue($kunci, $nilai);
@@ -79,9 +100,16 @@ class PengajuanService
 
     /**
      * Detail satu pengajuan.
+     * Mengambil satu baris berdasarkan ID atau mengembalikan null.
+     * Dipanggil oleh: halaman pada modul pengajuan.
+     * Data terkait: pengajuan, pelanggan, piutang, pembayaran, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @return ?array hasil sesuai tugas fungsi.
      */
     public static function ambil(PDO $pdo, int $id): ?array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'SELECT pg.*, p.no_transaksi, p.total_piutang, p.sisa_piutang, p.jatuh_tempo, p.status AS status_piutang,
                     pl.kode_pelanggan, pl.nama_pelanggan,
@@ -106,9 +134,16 @@ class PengajuanService
 
     /**
      * Pengajuan milik satu pelanggan (DFD 8.6).
+     * Mengambil pengajuan milik pelanggan yang sedang login.
+     * Dipanggil oleh: halaman pada modul pengajuan.
+     * Data terkait: pengajuan, pelanggan, piutang, pembayaran, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $idPelanggan ID pelanggan yang menjadi sasaran atau filter.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function daftarMilikPelanggan(PDO $pdo, int $idPelanggan): array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'SELECT pg.id_pengajuan, pg.nominal, pg.tanggal_pengajuan, pg.metode_pembayaran,
                     pg.catatan, pg.status, pg.alasan_penolakan, pg.bukti_pembayaran,
@@ -127,6 +162,14 @@ class PengajuanService
     /**
      * Pelanggan mengajukan pembayaran (DFD 8.5).
      * $data['nama_berkas_simpan'] = nama acak berkas bukti (sudah diunggah).
+     * Mencatat pengajuan baru untuk ditinjau.
+     * Dipanggil oleh: halaman pada modul pengajuan.
+     * Data terkait: pengajuan, pelanggan, piutang, pembayaran, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $idPelanggan ID pelanggan yang menjadi sasaran atau filter.
+     * @param int $idUser ID pengguna yang sedang melakukan aksi.
+     * @param array $data nilai form yang telah diterima dari halaman pemanggil.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function buat(PDO $pdo, int $idPelanggan, int $idUser, array $data): array
     {
@@ -151,6 +194,8 @@ class PengajuanService
         if ($namaBerkas === '') {
             return ['ok' => false, 'pesan' => 'Bukti pembayaran wajib diunggah.'];
         }
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare(
             'SELECT p.id_piutang, p.id_pelanggan, p.sisa_piutang, p.status
@@ -188,6 +233,7 @@ class PengajuanService
         }
 
         try {
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
             $stmt = $pdo->prepare(
                 'INSERT INTO pengajuan_pembayaran
                     (id_piutang, id_pelanggan, id_user, nominal, tanggal_pengajuan,
@@ -223,11 +269,21 @@ class PengajuanService
      * Manajer menyetujui pengajuan (DFD 4.4).
      * Membuat SATU pembayaran resmi lalu menghitung ulang saldo.
      * Request berulang tidak menghasilkan pembayaran kedua.
+     * Menyetujui pengajuan dan menerapkan perubahannya.
+     * Dipanggil oleh: halaman pada modul pengajuan.
+     * Data terkait: pengajuan, pelanggan, piutang, pembayaran, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @param int $idUserVerifikasi ID staf yang mencatat keputusan verifikasi.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function setujui(PDO $pdo, int $id, int $idUserVerifikasi): array
     {
         try {
+            // Kelompokkan beberapa perubahan agar semuanya berhasil bersama atau dibatalkan bersama.
             $pdo->beginTransaction();
+
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
             $stmt = $pdo->prepare('SELECT * FROM pengajuan_pembayaran WHERE id_pengajuan = :id FOR UPDATE');
             $stmt->execute([':id' => $id]);
@@ -250,6 +306,8 @@ class PengajuanService
 
             $idPiutang = (int) $pengajuan['id_piutang'];
             $nominal = round((float) $pengajuan['nominal'], 2);
+
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
             $stmt = $pdo->prepare('SELECT sisa_piutang FROM piutang WHERE id_piutang = :id FOR UPDATE');
             $stmt->execute([':id' => $idPiutang]);
@@ -276,6 +334,8 @@ class PengajuanService
                     'pesan' => 'Nominal pengajuan melebihi sisa tagihan saat ini (' . formatRupiah($sisa) . '). Tolak pengajuan atau koreksi nominalnya.',
                 ];
             }
+
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
             $stmt = $pdo->prepare(
                 'INSERT INTO pembayaran (id_piutang, tanggal_pembayaran, jumlah_bayar, metode_pembayaran, keterangan, status)
@@ -323,6 +383,14 @@ class PengajuanService
 
     /**
      * Manajer menolak pengajuan (DFD 4.4). Saldo piutang tidak berubah.
+     * Menolak pengajuan dan menyimpan alasannya.
+     * Dipanggil oleh: halaman pada modul pengajuan.
+     * Data terkait: pengajuan, pelanggan, piutang, pembayaran, users.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @param int $idUserVerifikasi ID staf yang mencatat keputusan verifikasi.
+     * @param string $alasan alasan perubahan atau pembatalan.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function tolak(PDO $pdo, int $id, int $idUserVerifikasi, string $alasan): array
     {
@@ -332,7 +400,10 @@ class PengajuanService
         }
 
         try {
+            // Kelompokkan beberapa perubahan agar semuanya berhasil bersama atau dibatalkan bersama.
             $pdo->beginTransaction();
+
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
             $stmt = $pdo->prepare('SELECT status FROM pengajuan_pembayaran WHERE id_pengajuan = :id FOR UPDATE');
             $stmt->execute([':id' => $id]);
@@ -349,6 +420,8 @@ class PengajuanService
 
                 return ['ok' => false, 'pesan' => 'Pengajuan ini sudah diproses sebelumnya.'];
             }
+
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
             $stmt = $pdo->prepare(
                 "UPDATE pengajuan_pembayaran

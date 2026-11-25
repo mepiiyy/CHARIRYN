@@ -3,16 +3,30 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman permintaan pada modul Pelanggan.
+ * Gunanya : Menampilkan atau memproses permintaan yang perlu ditinjau.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PelangganService.php, helpers/*, tabel pelanggan, piutang, pembayaran.
+ */
+
+/**
  * Halaman: Permintaan Perubahan Profil (DFD 2.4)
  * Fungsi: Manajer meninjau profil saat ini, data yang diajukan, alasan,
  * lalu menyetujui atau menolak. Profil aktif hanya berubah setelah
  * persetujuan.
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
 
+// Buka koneksi database yang dipakai service pada halaman ini.
+
 $pdo = koneksiDatabase();
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPermintaan = (int) bersihkan($_POST['id_permintaan'] ?? 0);
@@ -44,6 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $judul_halaman = 'Permintaan Profil';
 $sub_judul_halaman = 'Tinjau permintaan perubahan profil pelanggan';
 $halaman_aktif = 'permintaan-profil';
+
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
 
 require_once BASE_PATH . '/includes/kepala.php';
 

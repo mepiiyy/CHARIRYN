@@ -3,10 +3,19 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Aktivasi akun pelanggan.
+ * Gunanya : Memvalidasi token aktivasi dan menerima kata sandi pertama pelanggan.
+ * Alur    : Pengguna mengirim form -> server memeriksa input -> service memverifikasi -> sesi atau redirect diperbarui.
+ * Terhubung ke: PenggunaService, tabel users.
+ */
+
+/**
  * Halaman: Aktivasi Akun Pelanggan (DFD 7.4)
  * Fungsi: Pelanggan memasukkan kode aktivasi dari manajer dan
  * menetapkan kata sandi sendiri. Token bersifat satu kali.
  */
+
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
 
 require_once __DIR__ . '/../includes/init.php';
 
@@ -16,6 +25,8 @@ if (sudahLogin()) {
 
 $token = '';
 $kesalahan = [];
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $token = bersihkan($_POST['token_aktivasi'] ?? '');

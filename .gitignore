@@ -1,16 +1,24 @@
+# Apa ini: daftar pola berkas yang tidak perlu disimpan di Git.
+# Gunanya: mencegah dependensi lokal, log, unggahan, rahasia, dan pengaturan editor
+# masuk ke riwayat perubahan proyek.
+
 /vendor/
 composer.lock
 
+# Log dibuat saat aplikasi berjalan dan dapat berisi rincian kesalahan.
 /logs/*.log
 
+# Bukti pembayaran adalah berkas pengguna. Jangan masukkan ke Git.
 /storage/bukti/*
 !/storage/bukti/.htaccess
 !/storage/bukti/index.html
 
+# File lingkungan dapat berisi kata sandi dan tidak dibaca langsung oleh aplikasi.
 .env
 .env.local
 .env.*
 
+# Berkas sistem operasi dan pengaturan editor bersifat lokal.
 .DS_Store
 Thumbs.db
 

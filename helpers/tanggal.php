@@ -3,8 +3,21 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Format dan konversi tanggal.
+ * Gunanya : Mengubah tanggal dari/ke format yang mudah dibaca pengguna Indonesia.
+ * Alur    : includes/init.php memuat fungsi -> halaman atau service memanggilnya sesuai kebutuhan.
+ * Terhubung ke: halaman form, tabel, laporan.
+ */
+
+/**
  * File: Tanggal
  * Fungsi: Pemformatan tanggal Indonesia
+ * Memformat tanggal dalam bentuk yang mudah dibaca.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?string $tanggal tanggal yang akan diperiksa atau diformat.
+ * @param bool $denganNamaBulan nilai yang diperlukan fungsi.
+ * @return string hasil sesuai tugas fungsi.
  */
 
 function formatTanggalIndonesia(?string $tanggal, bool $denganNamaBulan = false): string
@@ -31,6 +44,13 @@ function formatTanggalIndonesia(?string $tanggal, bool $denganNamaBulan = false)
     return date('d', $waktu) . ' ' . $bulan[(int) date('n', $waktu)] . ' ' . date('Y', $waktu);
 }
 
+/**
+ * Memformat tanggal beserta waktu.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?string $waktu nilai yang diperlukan fungsi.
+ * @return string hasil sesuai tugas fungsi.
+ */
 function formatTanggalWaktuIndonesia(?string $waktu): string
 {
     if ($waktu === null || $waktu === '') {
@@ -45,6 +65,11 @@ function formatTanggalWaktuIndonesia(?string $waktu): string
  * Konvensi: seluruh aplikasi memakai format hari/bulan/tahun (dd/mm/yyyy)
  * di layar dan input. Fungsi ini menerima input pengguna (dd/mm/yyyy,
  * dd-mm-yyyy, atau Y-m-d) dan mengembalikan Y-m-d, atau null bila invalid.
+ * Mengubah tanggal Indonesia menjadi format database.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param mixed $nilai nilai masukan yang akan diperiksa atau diformat.
+ * @return ?string hasil sesuai tugas fungsi.
  */
 function parseTanggalID(mixed $nilai): ?string
 {
@@ -72,6 +97,11 @@ function parseTanggalID(mixed $nilai): ?string
  * Nilai untuk atribut value input tanggal: Y-m-d -> dd/mm/yyyy.
  * Mentah yang tak terparse ditampilkan apa adanya (agar ketikan
  * sebagian saat filter realtime tidak hilang).
+ * Menyiapkan tanggal untuk ditampilkan.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param mixed $nilai nilai masukan yang akan diperiksa atau diformat.
+ * @return string hasil sesuai tugas fungsi.
  */
 function tampilTanggalID(mixed $nilai): string
 {
@@ -87,6 +117,11 @@ function tampilTanggalID(mixed $nilai): string
 /**
  * Selisih hari antara tanggal tertentu dan hari ini.
  * Positif = sudah lewat, nol = hari ini, negatif = masih depan.
+ * Menghitung jarak hari dari tanggal sekarang.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param string $tanggal tanggal yang akan diperiksa atau diformat.
+ * @return int hasil sesuai tugas fungsi.
  */
 function selisihHariDariHariIni(string $tanggal): int
 {

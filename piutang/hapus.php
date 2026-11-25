@@ -3,17 +3,31 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman hapus pada modul Piutang.
+ * Gunanya : Memeriksa permintaan lalu menjalankan aturan penghapusan.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PiutangService.php, helpers/*, tabel piutang, pelanggan, pembayaran.
+ */
+
+/**
  * Halaman: Hapus Piutang
  * Fungsi: Konfirmasi dan penghapusan piutang tanpa pembayaran (POST + CSRF)
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
+
+// Baca ID dari URL melalui helper yang menolak nilai bukan angka.
 
 $id = ambilIdDariGet();
 if ($id === null) {
     redirect(BASE_URL . 'error/404.php');
 }
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $piutang = PiutangService::ambil($pdo, $id);
@@ -26,7 +40,11 @@ $judul_halaman = 'Hapus Piutang';
 $sub_judul_halaman = $piutang['no_transaksi'];
 $halaman_aktif = 'piutang';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!cekTokenCsrf($_POST['token_csrf'] ?? null)) {

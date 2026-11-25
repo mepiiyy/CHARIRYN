@@ -1,3 +1,7 @@
+/* Apa ini : Penyesuaian tata letak untuk berbagai ukuran layar.
+   Gunanya : Menjaga tampilan konsisten di semua halaman.
+   Alur    : variables.css menyediakan nilai bersama -> aturan di berkas ini diterapkan pada class HTML.
+   Terhubung ke: includes/kepala.php, assets/css/variables.css, dan class HTML pada halaman. */
 @media (max-width: 1023px) {
     .nav-fab {
         display: inline-flex; align-items: center; justify-content: center;

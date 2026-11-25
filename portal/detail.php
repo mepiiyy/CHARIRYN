@@ -3,17 +3,31 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman detail pada modul Portal pelanggan.
+ * Gunanya : Menampilkan satu data beserta informasi terkait.
+ * Alur    : Muat bootstrap -> pastikan sesi pelanggan -> batasi data dengan ID pelanggan dari sesi -> tampilkan halaman atau proses form.
+ * Terhubung ke: includes/init.php, services/PortalService.php / PengajuanService.php / ProfilService.php, helpers/*, tabel pelanggan, users, piutang, pembayaran, pengajuan.
+ */
+
+/**
  * Halaman: Detail Tagihan Pelanggan (DFD 8.2-8.4)
  * Fungsi: Detail satu piutang milik pelanggan yang sedang login.
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Pastikan pengguna adalah pelanggan sebelum membaca data portal.
 requirePelanggan();
+
+// Baca ID dari URL melalui helper yang menolak nilai bukan angka.
 
 $id = ambilIdDariGet();
 if ($id === null) {
     redirect(BASE_URL . 'portal/index.php');
 }
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $idPelanggan = idPelangganUser();
@@ -27,6 +41,8 @@ if ($piutang === null) {
 $judul_halaman = 'Detail Tagihan';
 $sub_judul_halaman = (string) $piutang['no_transaksi'];
 $halaman_aktif = 'portal';
+
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
 
 require_once BASE_PATH . '/includes/kepala.php';
 

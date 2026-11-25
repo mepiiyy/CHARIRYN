@@ -1,3 +1,6 @@
+<!-- Dokumentasi: penutup layout utama.
+Alur: tutup area konten -> muat JavaScript bersama -> sediakan wadah modal.
+Terhubung ke: includes/kepala.php, assets/js/*, dan includes/sidebar.php. -->
         </main>
     </div>
 </div>

@@ -3,8 +3,17 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman tidak ditemukan.
+ * Gunanya : Mengirim respons HTTP 404 dan memberi tautan kembali.
+ * Alur    : Tetapkan kode HTTP -> tampilkan pesan aman -> arahkan pengguna kembali bila memungkinkan.
+ * Terhubung ke: includes/init.php, helpers/autentikasi.php.
+ */
+
+/**
  * Halaman: Tidak Ditemukan (404)
  */
+
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
 
 require_once __DIR__ . '/../includes/init.php';
 

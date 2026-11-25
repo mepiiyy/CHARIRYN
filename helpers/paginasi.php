@@ -3,8 +3,22 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Pembuat navigasi paginasi.
+ * Gunanya : Membuat tautan halaman sambil mempertahankan filter pencarian.
+ * Alur    : includes/init.php memuat fungsi -> halaman atau service memanggilnya sesuai kebutuhan.
+ * Terhubung ke: halaman daftar, service daftar.
+ */
+
+/**
  * File: Paginasi
  * Fungsi: Membuat tautan navigasi halaman (Sebelumnya / nomor / Berikutnya)
+ * Membuat tautan halaman dan mempertahankan filter.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param int $halaman nomor halaman yang diminta.
+ * @param int $totalHalaman nilai yang diperlukan fungsi.
+ * @param array $parameter filter URL yang perlu dipertahankan saat pindah halaman.
+ * @return string hasil sesuai tugas fungsi.
  */
 
 function paginasiHtml(int $halaman, int $totalHalaman, array $parameter = []): string

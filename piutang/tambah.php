@@ -3,18 +3,32 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman tambah pada modul Piutang.
+ * Gunanya : Menerima, memvalidasi, lalu menyimpan data baru.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PiutangService.php, helpers/*, tabel piutang, pelanggan, pembayaran.
+ */
+
+/**
  * Halaman: Tambah Piutang
  * Fungsi: Mencatat piutang baru dari transaksi kredit
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
 
 $judul_halaman = 'Tambah Piutang';
 $sub_judul_halaman = 'Catat piutang baru dari penjualan kredit';
 $halaman_aktif = 'piutang';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $daftarPelanggan = PelangganService::ambilOpsi($pdo);
@@ -32,6 +46,8 @@ if ($noTransaksi === '') {
     $jumlahAda = (int) $pdo->query('SELECT COUNT(*) FROM piutang')->fetchColumn();
     $noTransaksi = 'TRX-' . date('Ymd') . '-' . str_pad((string) ($jumlahAda + 1), 3, '0', STR_PAD_LEFT);
 }
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPelanggan = (int) ($_POST['id_pelanggan'] ?? 0);

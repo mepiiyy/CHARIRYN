@@ -3,14 +3,33 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Service Pelanggan yang berisi aturan bisnis dan query.
+ * Gunanya : Mengelola query pelanggan, riwayat, dan ringkasan.
+ * Alur    : Halaman memanggil metode -> service menjalankan query PDO -> hasil dikembalikan ke halaman.
+ * Terhubung ke: halaman modul, config/database.php, helpers/*, tabel pelanggan, piutang, pembayaran
+ */
+
+/**
  * Service: Pelanggan
  * Fungsi: Operasi data pelanggan (CRUD, pencarian, ringkasan)
  */
 
 class PelangganService
 {
+    /**
+     * Mengambil daftar data dengan filter dan paginasi.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $cari kata kunci pencarian, kosong berarti tanpa filter.
+     * @param string $status status yang dipakai sebagai filter.
+     * @param int $halaman nomor halaman yang diminta.
+     * @param int $perHalaman jumlah data pada setiap halaman.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function ambilSemua(PDO $pdo, string $cari = '', string $status = '', int $halaman = 1, int $perHalaman = 10): array
     {
+        // Siapkan filter opsional; SQL hanya menambahkan syarat yang memang dipilih pengguna.
         $kondisi = [];
         $parameter = [];
 
@@ -25,6 +44,8 @@ class PelangganService
         }
 
         $where = $kondisi !== [] ? 'WHERE ' . implode(' AND ', $kondisi) : '';
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM pelanggan AS p ' . $where);
         $stmt->execute($parameter);
@@ -47,6 +68,8 @@ class PelangganService
                 ORDER BY p.nama_pelanggan ASC
                 LIMIT :batas OFFSET :offset';
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare($sql);
         foreach ($parameter as $kunci => $nilai) {
             $stmt->bindValue($kunci, $nilai);
@@ -58,8 +81,17 @@ class PelangganService
         return ['data' => $stmt->fetchAll(), 'total' => $total];
     }
 
+    /**
+     * Mengambil satu baris berdasarkan ID atau mengembalikan null.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @return ?array hasil sesuai tugas fungsi.
+     */
     public static function ambil(PDO $pdo, int $id): ?array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare('SELECT * FROM pelanggan WHERE id_pelanggan = :id LIMIT 1');
         $stmt->execute([':id' => $id]);
         $hasil = $stmt->fetch();
@@ -67,6 +99,13 @@ class PelangganService
         return $hasil === false ? null : $hasil;
     }
 
+    /**
+     * Mengambil pilihan untuk dropdown formulir.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function ambilOpsi(PDO $pdo): array
     {
         // Semua status ikut (pelanggan baru langsung terindeks di filter).
@@ -78,6 +117,15 @@ class PelangganService
         )->fetchAll();
     }
 
+    /**
+     * Memeriksa keunikan kode pelanggan.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param string $kode nilai yang diperlukan fungsi.
+     * @param ?int $abaikanId ID yang dikecualikan saat memeriksa keunikan.
+     * @return bool hasil sesuai tugas fungsi.
+     */
     public static function kodeTersedia(PDO $pdo, string $kode, ?int $abaikanId = null): bool
     {
         $sql = 'SELECT COUNT(*) FROM pelanggan WHERE kode_pelanggan = :kode';
@@ -88,14 +136,25 @@ class PelangganService
             $parameter[':id'] = $abaikanId;
         }
 
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute($parameter);
 
         return (int) $stmt->fetchColumn() === 0;
     }
 
+    /**
+     * Menyimpan pelanggan baru dan mengembalikan ID-nya.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param array $data nilai form yang telah diterima dari halaman pemanggil.
+     * @return int hasil sesuai tugas fungsi.
+     */
     public static function buatPelanggan(PDO $pdo, array $data): int
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'INSERT INTO pelanggan (kode_pelanggan, nama_pelanggan, alamat, no_hp, email, status)
              VALUES (:kode, :nama, :alamat, :no_hp, :email, :status)'
@@ -116,11 +175,20 @@ class PelangganService
      * Memperbarui data pelanggan (DFD 2.2).
      * Perubahan status pelanggan ikut menyinkronkan status akunnya (D1)
      * supaya pelanggan nonaktif tidak bisa masuk melihat piutang.
+     * Memperbarui data pelanggan.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @param array $data nilai form yang telah diterima dari halaman pemanggil.
+     * @return bool hasil sesuai tugas fungsi.
      */
     public static function ubahPelanggan(PDO $pdo, int $id, array $data): bool
     {
+        // Kelompokkan beberapa perubahan agar semuanya berhasil bersama atau dibatalkan bersama.
         $pdo->beginTransaction();
         try {
+            // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
             $stmt = $pdo->prepare(
                 'UPDATE pelanggan
                  SET kode_pelanggan = :kode,
@@ -162,8 +230,17 @@ class PelangganService
         return true;
     }
 
+    /**
+     * Memeriksa transaksi terkait sebelum penghapusan.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @return bool hasil sesuai tugas fungsi.
+     */
     public static function punyaRiwayat(PDO $pdo, int $id): bool
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM piutang WHERE id_pelanggan = :id');
         $stmt->execute([':id' => $id]);
 
@@ -177,12 +254,21 @@ class PelangganService
      * piutang/pembayaran. Riwayat keuangan tidak boleh hilang, jadi
      * pelanggan yang sudah punya transaksi harus dinonaktifkan, bukan
      * dihapus. Akun login (D1) ikut terhapus hanya pada kasus itu.
+     * Menjalankan aturan penghapusan pelanggan dan mengembalikan hasil.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @return array hasil sesuai tugas fungsi.
      */
     public static function hapusPelanggan(PDO $pdo, int $id): array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM piutang WHERE id_pelanggan = :id');
         $stmt->execute([':id' => $id]);
         $jumlahPiutang = (int) $stmt->fetchColumn();
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare(
             'SELECT COUNT(*) FROM pembayaran AS b
@@ -191,6 +277,8 @@ class PelangganService
         );
         $stmt->execute([':id' => $id]);
         $jumlahPembayaran = (int) $stmt->fetchColumn();
+
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
 
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE id_pelanggan = :id');
         $stmt->execute([':id' => $id]);
@@ -210,6 +298,7 @@ class PelangganService
         }
 
         try {
+            // Kelompokkan beberapa perubahan agar semuanya berhasil bersama atau dibatalkan bersama.
             $pdo->beginTransaction();
             // D1 lebih dulu: akun pelanggan tidak boleh menjadi yatim.
             $pdo->prepare('DELETE FROM users WHERE id_pelanggan = :id')->execute([':id' => $id]);
@@ -231,8 +320,17 @@ class PelangganService
         return ['ok' => $ok, 'pesan' => '', 'piutang' => 0, 'pembayaran' => 0, 'akun' => $jumlahAkun];
     }
 
+    /**
+     * Menghitung ringkasan pelanggan/piutang terkait.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $id ID baris yang menjadi sasaran.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function ringkasan(PDO $pdo, int $id): array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'SELECT
                 COUNT(*) AS jumlah_piutang,
@@ -247,8 +345,17 @@ class PelangganService
         return $stmt->fetch();
     }
 
+    /**
+     * Mengambil riwayat piutang pelanggan.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $idPelanggan ID pelanggan yang menjadi sasaran atau filter.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function riwayatPiutang(PDO $pdo, int $idPelanggan): array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'SELECT id_piutang, no_transaksi, tanggal_transaksi, total_piutang,
                     jumlah_dibayar, sisa_piutang, jatuh_tempo, status
@@ -261,8 +368,17 @@ class PelangganService
         return $stmt->fetchAll();
     }
 
+    /**
+     * Mengambil riwayat pembayaran pelanggan.
+     * Dipanggil oleh: halaman pada modul pelanggan.
+     * Data terkait: pelanggan, piutang, pembayaran.
+     * @param PDO $pdo koneksi PDO aktif.
+     * @param int $idPelanggan ID pelanggan yang menjadi sasaran atau filter.
+     * @return array hasil sesuai tugas fungsi.
+     */
     public static function riwayatPembayaran(PDO $pdo, int $idPelanggan): array
     {
+        // Prepared statement memisahkan nilai masukan dari SQL agar input tidak menjadi perintah SQL.
         $stmt = $pdo->prepare(
             'SELECT b.id_pembayaran, b.tanggal_pembayaran, b.jumlah_bayar, b.metode_pembayaran, b.keterangan,
                     b.status, b.alasan_pembatalan, p.no_transaksi

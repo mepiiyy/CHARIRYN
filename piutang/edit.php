@@ -3,17 +3,31 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman edit pada modul Piutang.
+ * Gunanya : Memuat data lama dan menyimpan perubahan setelah validasi.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PiutangService.php, helpers/*, tabel piutang, pelanggan, pembayaran.
+ */
+
+/**
  * Halaman: Edit Piutang
  * Fungsi: Memperbarui data piutang (jumlah dibayar dan status tetap otomatis)
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
+
+// Baca ID dari URL melalui helper yang menolak nilai bukan angka.
 
 $id = ambilIdDariGet();
 if ($id === null) {
     redirect(BASE_URL . 'error/404.php');
 }
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $piutang = PiutangService::ambil($pdo, $id);
@@ -26,6 +40,8 @@ $judul_halaman = 'Edit Piutang';
 $sub_judul_halaman = $piutang['no_transaksi'];
 $halaman_aktif = 'piutang';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
 
 $daftarPelanggan = PelangganService::ambilOpsi($pdo);
@@ -37,6 +53,8 @@ $tanggalTransaksi = (string) $piutang['tanggal_transaksi'];
 $jatuhTempo = (string) $piutang['jatuh_tempo'];
 $total = (string) $piutang['total_piutang'];
 $keterangan = (string) ($piutang['keterangan'] ?? '');
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPelanggan = (int) ($_POST['id_pelanggan'] ?? 0);

@@ -3,32 +3,70 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Fungsi login dan sesi.
+ * Gunanya : Membaca identitas/peran dari sesi, memproses login, dan mengatur redirect.
+ * Alur    : includes/init.php memuat fungsi -> halaman atau service memanggilnya sesuai kebutuhan.
+ * Terhubung ke: auth/*, helpers/otorisasi.php, halaman terlindungi, tabel users.
+ */
+
+/**
  * File: Autentikasi
  * Fungsi: Status login, sesi, pengalihan (redirect)
  */
 
 define('BATAS_WAKTU_SESI', 7200); // 2 jam tanpa aktivitas
 
+/**
+ * Memeriksa apakah sesi menyimpan ID pengguna yang sudah masuk.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return bool hasil sesuai tugas fungsi.
+ */
 function sudahLogin(): bool
 {
     return isset($_SESSION['user']['id_user']);
 }
 
+/**
+ * Mengambil data pengguna dari sesi.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return array hasil sesuai tugas fungsi.
+ */
 function userSaatIni(): array
 {
     return $_SESSION['user'] ?? [];
 }
 
+/**
+ * Mengambil peran pengguna dari sesi untuk pemeriksaan akses.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return string hasil sesuai tugas fungsi.
+ */
 function roleUser(): string
 {
     return (string) ($_SESSION['user']['role'] ?? '');
 }
 
+/**
+ * Mengambil ID pelanggan yang terhubung ke sesi.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return int hasil sesuai tugas fungsi.
+ */
 function idPelangganUser(): int
 {
     return (int) ($_SESSION['user']['id_pelanggan'] ?? 0);
 }
 
+/**
+ * Mengubah kode peran menjadi label yang mudah dibaca.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param string $role kode peran pengguna.
+ * @return string hasil sesuai tugas fungsi.
+ */
 function labelRole(string $role): string
 {
     return match ($role) {
@@ -39,6 +77,12 @@ function labelRole(string $role): string
     };
 }
 
+/**
+ * Memilih halaman awal sesuai peran pengguna.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return string hasil sesuai tugas fungsi.
+ */
 function urlBerandaSesuaiPeran(): string
 {
     return match (roleUser()) {
@@ -54,6 +98,11 @@ function urlBerandaSesuaiPeran(): string
  * DFD ini menyediakan dua halaman, satu untuk Pelanggan dan satu untuk
  * Pemilik/Manajer. Ketiganya tetap memakai proses 1.0 (Autentikasi &
  * Sesi) yang sama - hanya antarmuka masuknya yang berbeda.
+ * Menentukan halaman login yang sesuai dengan peran.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param ?string $role kode peran pengguna.
+ * @return string hasil sesuai tugas fungsi.
  */
 function halamanLoginPeran(?string $role = null): string
 {
@@ -70,6 +119,12 @@ function halamanLoginPeran(?string $role = null): string
  *
  * @return array<int,string> Pesan kesalahan (kosong bila berhasil; bila
  *                         berhasil fungsi ini mengarahkan ke beranda peran).
+ * Memeriksa kredensial dan peran, lalu membuat sesi bila valid.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param array $data nilai form yang telah diterima dari halaman pemanggil.
+ * @param array $peranDiizinkan daftar peran yang boleh login pada halaman ini.
+ * @return array hasil sesuai tugas fungsi.
  */
 function prosesLoginPengguna(array $data, array $peranDiizinkan): array
 {
@@ -117,12 +172,25 @@ function prosesLoginPengguna(array $data, array $peranDiizinkan): array
     return [];
 }
 
+/**
+ * Mengirim respons pengalihan dan menghentikan alur halaman.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @param string $url nilai yang diperlukan fungsi.
+ * @return void hasil sesuai tugas fungsi.
+ */
 function redirect(string $url): void
 {
     header('Location: ' . $url);
     exit;
 }
 
+/**
+ * Menghapus data sesi dan cookie sesi.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return void hasil sesuai tugas fungsi.
+ */
 function hancurkanSesi(): void
 {
     $_SESSION = [];
@@ -143,6 +211,12 @@ function hancurkanSesi(): void
     session_destroy();
 }
 
+/**
+ * Memeriksa status serta masa aktif sesi.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return void hasil sesuai tugas fungsi.
+ */
 function cekLogin(): void
 {
     if (!sudahLogin()) {
@@ -191,6 +265,12 @@ function cekLogin(): void
     $_SESSION['waktu_terakhir'] = time();
 }
 
+/**
+ * Mewajibkan pengguna sudah login.
+ * Dipanggil oleh: halaman, service, atau include yang membutuhkan helper ini.
+ * Data terkait: data yang dipakai fungsi ini.
+ * @return void hasil sesuai tugas fungsi.
+ */
 function requireLogin(): void
 {
     cekLogin();

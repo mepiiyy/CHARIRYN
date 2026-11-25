@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman login pelanggan.
+ * Gunanya : Memeriksa akun pelanggan dan mengarahkan ke portal pribadi.
+ * Alur    : Pengguna mengirim form -> server memeriksa input -> service memverifikasi -> sesi atau redirect diperbarui.
+ * Terhubung ke: PenggunaService, PortalService, tabel users/pelanggan.
+ */
+
+/**
  * Halaman: Masuk Pelanggan (proses 1.1-1.3)
  * Fungsi: Autentikasi untuk aktor Pelanggan, yang setelah masuk langsung
  * diarahkan ke portal piutang pribadinya (proses 8.0).
@@ -10,6 +17,8 @@ declare(strict_types=1);
  * Pemilik dan Manajer memakai halaman terpisah (auth/login.php).
  * Keduanya memakai proses 1.0 (Autentikasi & Sesi) yang sama.
  */
+
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
 
 require_once __DIR__ . '/../includes/init.php';
 
@@ -19,6 +28,8 @@ if (sudahLogin()) {
 
 $username = '';
 $kesalahan = [];
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = bersihkan($_POST['username'] ?? '');

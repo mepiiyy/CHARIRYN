@@ -3,6 +3,13 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman bukti pada modul Pengajuan pembayaran.
+ * Gunanya : Memeriksa hak akses lalu mengirim berkas bukti secara privat.
+ * Alur    : Muat bootstrap -> periksa sesi dan kepemilikan bukti -> kirim berkas privat bila akses diizinkan.
+ * Terhubung ke: includes/init.php, services/PengajuanService.php, helpers/*, tabel pengajuan, pelanggan, piutang, pembayaran, users.
+ */
+
+/**
  * Endpoint: Bukti Pembayaran (DFD 4.4 / 8.5)
  * Fungsi: Menampilkan berkas bukti pembayaran yang terlampir pada
  * pengajuan. Berkas tidak dapat diakses publik hanya dengan knowing
@@ -10,13 +17,19 @@ declare(strict_types=1);
  * pengajuan tersebut.
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
 requireLogin();
+
+// Baca ID dari URL melalui helper yang menolak nilai bukan angka.
 
 $id = ambilIdDariGet();
 if ($id === null) {
     redirect(BASE_URL . 'error/404.php');
 }
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $pengajuan = PengajuanService::ambil($pdo, $id);

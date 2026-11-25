@@ -3,14 +3,26 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman pengajuan pada modul Portal pelanggan.
+ * Gunanya : Menampilkan atau memproses data pada modul.
+ * Alur    : Muat bootstrap -> pastikan sesi pelanggan -> batasi data dengan ID pelanggan dari sesi -> tampilkan halaman atau proses form.
+ * Terhubung ke: includes/init.php, services/PortalService.php / PengajuanService.php / ProfilService.php, helpers/*, tabel pelanggan, users, piutang, pembayaran, pengajuan.
+ */
+
+/**
  * Halaman: Ajukan Pembayaran Piutang (DFD 8.5)
  * Fungsi: Pelanggan mengajukan pembayaran atas tagihan miliknya
  * sendiri dan mengunggah bukti. Pengajuan disimpan sebagai pengajuan
  * (D5) dan menunggu verifikasi manajer - belum mengurangi saldo.
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Pastikan pengguna adalah pelanggan sebelum membaca data portal.
 requirePelanggan();
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $idPelanggan = idPelangganUser();
@@ -25,6 +37,8 @@ $nominal = '';
 $metode = 'Transfer';
 $tanggal = date('Y-m-d');
 $catatan = '';
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idPiutang = (int) ($_POST['id_piutang'] ?? 0);
@@ -80,6 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $nominal = (string) $nilaiNominal;
 }
+
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
 
 require_once BASE_PATH . '/includes/kepala.php';
 

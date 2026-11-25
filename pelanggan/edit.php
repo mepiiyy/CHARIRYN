@@ -3,17 +3,31 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman edit pada modul Pelanggan.
+ * Gunanya : Memuat data lama dan menyimpan perubahan setelah validasi.
+ * Alur    : Muat bootstrap -> periksa sesi dan hak akses -> baca atau validasi permintaan -> panggil service -> tampilkan hasil atau redirect.
+ * Terhubung ke: includes/init.php, services/PelangganService.php, helpers/*, tabel pelanggan, piutang, pembayaran.
+ */
+
+/**
  * Halaman: Edit Pelanggan
  * Fungsi: Memperbarui data pelanggan
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Periksa peran di server; menyembunyikan menu saja tidak cukup untuk melindungi halaman.
 requireManajer();
+
+// Baca ID dari URL melalui helper yang menolak nilai bukan angka.
 
 $id = ambilIdDariGet();
 if ($id === null) {
     redirect(BASE_URL . 'error/404.php');
 }
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $pelanggan = PelangganService::ambil($pdo, $id);
@@ -26,6 +40,8 @@ $judul_halaman = 'Edit Pelanggan';
 $sub_judul_halaman = 'Perbarui data pelanggan';
 $halaman_aktif = 'pelanggan';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
 
 $kesalahan = [];
@@ -36,6 +52,8 @@ $alamat = (string) ($pelanggan['alamat'] ?? '');
 $noHp = (string) ($pelanggan['no_hp'] ?? '');
 $email = (string) ($pelanggan['email'] ?? '');
 $status = (string) $pelanggan['status'];
+
+// Tangani data form di server sebelum halaman dirender.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $kode = bersihkan($_POST['kode_pelanggan'] ?? '');

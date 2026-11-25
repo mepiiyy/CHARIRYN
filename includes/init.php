@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+/**
+ * Apa ini : Potongan kerangka halaman bersama.
+ * Gunanya : Menghindari pengulangan layout, navigasi, pesan, dan bootstrap.
+ * Alur    : Halaman memuat bootstrap dan potongan layout -> browser menerima kerangka serta aset bersama.
+ * Terhubung ke: halaman staf, helpers/*, assets/css/*, assets/js/*.
+ */
+
 // Buffer output agar setFlash + redirect (PRG) tetap valid walau POST diproses setelah layout dirender
 ob_start();
 

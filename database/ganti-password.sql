@@ -1,3 +1,7 @@
+-- Apa ini : Perintah untuk mengganti hash kata sandi akun demo.
+-- Gunanya : Membantu reset akun lokal melalui MySQL atau phpMyAdmin.
+-- Alur    : Jalankan UPDATE pada akun yang dipilih -> login memeriksa hash baru.
+-- Terhubung ke: tabel users dan PenggunaService::autentikasi().
 -- =============================================================
 -- Ganti / reset password akun web langsung dari phpMyAdmin.
 -- Kolom users.password berisi HASH bcrypt, BUKAN teks biasa.
@@ -10,15 +14,16 @@
 --
 -- B. Password sendiri: buat dulu hash-nya di terminal, GANTI
 --    'PASSWORD_BARU' dengan password yang diinginkan:
---      /opt/lampp/bin/php -r "echo password_hash('PASSWORD_BARU', PASSWORD_DEFAULT), PHP_EOL;"
+--      Linux  : /opt/lampp/bin/php -r "echo password_hash('PASSWORD_BARU', PASSWORD_DEFAULT), PHP_EOL;"
+--      Windows: C:\xampp\php\php.exe -r "echo password_hash('PASSWORD_BARU', PASSWORD_DEFAULT), PHP_EOL;"
 --    Salin hash yang keluar, lalu jalankan:
 --      UPDATE users SET password = 'HASH_YANG_DISALIN' WHERE username = 'pemilik';
 --
--- Cara jalan: phpMyAdmin > database piutang_pelanggan > tab SQL >
+-- Cara jalan: phpMyAdmin > database chariryn > tab SQL >
 -- salin-tempel > Jalankan. Atau: mysql -u root -p < ganti-password.sql
 -- =============================================================
 
-USE piutang_pelanggan;
+USE chariryn;
 
 UPDATE users SET password = '$2y$10$i959cThrUyUJ0zSP.oYzr.Eo0cUVRTIblcibtqtjLgR5dZlmDhVsO' WHERE username = 'pemilik';
 UPDATE users SET password = '$2y$12$SMd6EfJnQtF6wwfEszQ3luTCPqIsFLnKptdspbYJeZCllH7vcQxJ2' WHERE username = 'manajer';

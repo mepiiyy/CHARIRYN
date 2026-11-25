@@ -1,3 +1,8 @@
+-- Apa ini : Data contoh untuk menguji aplikasi setelah skema dibuat.
+-- Gunanya : Mengisi pelanggan, akun demo, piutang, dan transaksi terkait.
+-- Alur    : Pilih database chariryn -> masukkan data contoh dengan ID yang sudah ditentukan.
+-- Terhubung ke: tabel dari schema.sql dan akun demo di README.md.
+-- Jalankan satu kali agar ID contoh tidak bentrok.
 -- =============================================================
 -- Data Awal (Seed) - Sistem Informasi Pengelolaan Data Piutang
 -- Password hash dibuat dengan password_hash() (bcrypt).
@@ -7,7 +12,7 @@
 --   pelanggan / Pelanggan123!  (terhubung ke PLG-001)
 -- =============================================================
 
-USE piutang_pelanggan;
+USE chariryn;
 
 SET NAMES utf8mb4;
 

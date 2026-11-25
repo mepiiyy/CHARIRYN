@@ -1,7 +1,11 @@
 /**
  * tabel.js
  * Bantuan tabel: tombol cetak dan validasi rentang tanggal pada filter.
- */
+  * Gunanya : Mengatur cetak laporan dan pemeriksaan rentang tanggal.
+ * Alur    : Cari elemen terkait -> pasang event -> perbarui tampilan atau perilaku browser.
+ * Dipakai oleh: includes/footer.php.
+ * Terhubung ke: elemen HTML dengan ID/class dan atribut data.
+*/
 (function () {
     'use strict';
 
@@ -15,6 +19,7 @@
     /* Validasi rentang tanggal pada filter (dari tidak boleh melebihi sampai) */
     document.querySelectorAll('form.form-filter-tanggal').forEach(function (form) {
         form.addEventListener('submit', function (e) {
+            /** Mengubah tanggal Indonesia menjadi format YYYY-MM-DD untuk perbandingan. */
             function normalisasi(nilai) {
                 var m = /^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/.exec((nilai || '').trim());
                 if (!m) { return ''; }

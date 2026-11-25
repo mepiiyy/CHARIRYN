@@ -3,19 +3,33 @@
 declare(strict_types=1);
 
 /**
+ * Apa ini : Halaman index pada modul Portal pelanggan.
+ * Gunanya : Menampilkan daftar atau ringkasan data.
+ * Alur    : Muat bootstrap -> pastikan sesi pelanggan -> batasi data dengan ID pelanggan dari sesi -> tampilkan halaman atau proses form.
+ * Terhubung ke: includes/init.php, services/PortalService.php / PengajuanService.php / ProfilService.php, helpers/*, tabel pelanggan, users, piutang, pembayaran, pengajuan.
+ */
+
+/**
  * Halaman: Dashboard Pelanggan (DFD 8.0)
  * Fungsi: Menampilkan piutang, saldo, riwayat, dan pengingat jatuh tempo
  * milik pelanggan yang sedang login. Identitas diambil dari sesi server.
  */
 
+// Muat konfigurasi, sesi, helper, service, dan penanganan kesalahan bersama.
+
 require_once __DIR__ . '/../includes/init.php';
+// Pastikan pengguna adalah pelanggan sebelum membaca data portal.
 requirePelanggan();
 
 $judul_halaman = 'Dashboard Pelanggan';
 $sub_judul_halaman = 'Informasi piutang milik Anda';
 $halaman_aktif = 'portal';
 
+// Mulai kerangka HTML bersama: head, navigasi, dan judul halaman.
+
 require_once BASE_PATH . '/includes/kepala.php';
+
+// Buka koneksi database yang dipakai service pada halaman ini.
 
 $pdo = koneksiDatabase();
 $idPelanggan = idPelangganUser();
